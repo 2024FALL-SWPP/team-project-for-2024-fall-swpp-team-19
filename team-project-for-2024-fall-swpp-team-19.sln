@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kcp2k", "kcp2k.csproj", "{3
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-Editor", "Assembly-CSharp-Editor.csproj", "{5D13D1A9-B143-11CB-CDC5-5C3A8B4435AB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{D1287A5B-B674-C03C-6FB4-4BDB20595E5B}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mirror.Authenticators", "Mirror.Authenticators.csproj", "{D85B9141-2946-FD93-EEA2-54FD454B6851}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EncryptionTransportEditor", "EncryptionTransportEditor.csproj", "{D5F3924B-8E38-C5C2-FECE-F5CEC8EA3013}"
@@ -79,6 +81,10 @@ Global
 		{5D13D1A9-B143-11CB-CDC5-5C3A8B4435AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5D13D1A9-B143-11CB-CDC5-5C3A8B4435AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5D13D1A9-B143-11CB-CDC5-5C3A8B4435AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1287A5B-B674-C03C-6FB4-4BDB20595E5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1287A5B-B674-C03C-6FB4-4BDB20595E5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1287A5B-B674-C03C-6FB4-4BDB20595E5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1287A5B-B674-C03C-6FB4-4BDB20595E5B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D85B9141-2946-FD93-EEA2-54FD454B6851}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D85B9141-2946-FD93-EEA2-54FD454B6851}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D85B9141-2946-FD93-EEA2-54FD454B6851}.Release|Any CPU.ActiveCfg = Release|Any CPU

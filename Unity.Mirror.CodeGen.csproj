@@ -91,9 +91,9 @@
     <Compile Include="Assets\Mirror\Editor\Weaver\Processors\SyncObjectInitializer.cs" />
     <Compile Include="Assets\Mirror\Editor\Weaver\Processors\RpcProcessor.cs" />
     <Compile Include="Assets\Mirror\Editor\Weaver\Readers.cs" />
+    <Compile Include="Assets\Mirror\Editor\Weaver\Processors\SyncVarAttributeAccessReplacer.cs" />
     <Compile Include="Assets\Mirror\Editor\Weaver\Processors\MonoBehaviourProcessor.cs" />
     <Compile Include="Assets\Mirror\Editor\Weaver\EntryPoint\CompilationFinishedHook.cs" />
-    <Compile Include="Assets\Mirror\Editor\Weaver\Processors\SyncVarAttributeAccessReplacer.cs" />
     <Compile Include="Assets\Mirror\Editor\Weaver\Processors\SyncObjectProcessor.cs" />
     <Compile Include="Assets\Mirror\Editor\Weaver\Processors\ReaderWriterProcessor.cs" />
     <Compile Include="Assets\Mirror\Editor\Weaver\EntryPointILPostProcessor\ILPostProcessorLogger.cs" />
