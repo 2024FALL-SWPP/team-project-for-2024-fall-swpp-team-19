@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
     "name": "Unity.Settings.Tests",
     "references": [
@@ -19,4 +20,27 @@
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": []
+=======
+{
+    "name": "Unity.Settings.Tests",
+    "references": [
+        "Unity.Settings.Editor"
+    ],
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
+>>>>>>> e3190cb01556ad73d251103ec4f203f5889335bc
 }
