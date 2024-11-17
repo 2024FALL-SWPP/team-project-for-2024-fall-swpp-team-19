@@ -1,0 +1,13 @@
+<<<<<<< HEAD
+{
+	"displayName":"User Settings Example",
+	"description": "Example code showing use of the Settings Manager attributes.",
+	"createSeparatePackage": false
+}
+=======
+{
+	"displayName":"User Settings Example",
+	"description": "Example code showing use of the Settings Manager attributes.",
+	"createSeparatePackage": false
+}
+>>>>>>> e3190cb01556ad73d251103ec4f203f5889335bc
