@@ -1,11 +1,15 @@
 using Mirror;
 
-public class PlayerData : NetworkBehaviour
+public class PlayerData
 {
-    [SyncVar]
-    public string playerName;
-    [SyncVar]
-    public PlayerData targetPlayer;
+    public string PlayerId { get; private set; }
+    public string PlayerName { get; private set; }
+    public bool IsReady { get; set; }
 
-    // Add more SyncVars as needed
+    public PlayerData(string playerId, string playerName)
+    {
+        PlayerId = playerId;
+        PlayerName = playerName;
+        IsReady = false;
+    }
 }
