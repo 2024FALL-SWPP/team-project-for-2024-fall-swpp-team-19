@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class MgEnemyController : MonoBehaviour
+public class EnemyController : MonoBehaviour
 {
     public float speed = 100f;
     public RectTransform minigamePanel; // MinigamePanel의 RectTransform을 직접 연결

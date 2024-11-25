@@ -2,7 +2,7 @@ using UnityEngine;
 using TMPro;
 using System.Collections;
 
-public class MgMinigameTrigger : MonoBehaviour
+public class MinigameTrigger : MonoBehaviour
 {
     public GameObject player;                     // 플레이어 오브젝트
     public GameObject minigameUI;                 // 미니게임 UI 패널

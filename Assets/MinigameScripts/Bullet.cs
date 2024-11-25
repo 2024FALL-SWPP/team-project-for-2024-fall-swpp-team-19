@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class MgBullet : MonoBehaviour
+public class Bullet : MonoBehaviour
 {
     public float speed = 200f;
     public RectTransform minigamePanel; // MinigamePanel의 RectTransform

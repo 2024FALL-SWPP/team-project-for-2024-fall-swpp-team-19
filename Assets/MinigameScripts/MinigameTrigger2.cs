@@ -4,7 +4,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 
-public class MgMinigameTrigger2 : MonoBehaviour
+public class MinigameTrigger2 : MonoBehaviour
 {
     public GameObject minigameUI;
     public TextMeshProUGUI textUI;

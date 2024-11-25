@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MgEnemySpawner : MonoBehaviour
+public class EnemySpawner : MonoBehaviour
 {
     public GameObject enemyPrefab; // 적 전투기 프리팹
     public RectTransform minigamePanel; // MinigamePanel의 RectTransform

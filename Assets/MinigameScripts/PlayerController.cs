@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class MgPlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
     public float speed = 20f;             // 플레이어 이동 속도
     public GameObject bulletPrefab;      // 발사할 총알 프리팹
