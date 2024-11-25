@@ -1,7 +1,7 @@
 using UnityEngine;
 using Mirror;
 
-public class GameSessionManager : NetworkBehaviour
+public class MgGameSessionManager : NetworkBehaviour
 {
     [SyncVar] private bool isGameInProgress = false; // 게임 진행 여부 (서버에서 동기화)
 
