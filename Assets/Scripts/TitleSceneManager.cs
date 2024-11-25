@@ -11,7 +11,6 @@ public class TitleSceneManager : MonoBehaviour
     public GameObject gameButtonGroup;
     public GameObject hostInputField;
     public GameObject controlButtonGroup;
-    public GameObject backButton;
     // Start is called before the first frame update
     void Start()
     {
@@ -24,8 +23,6 @@ public class TitleSceneManager : MonoBehaviour
     {
         gameButtonGroup.SetActive(true);
         controlButtonGroup.SetActive(false);
-        hostInputField.gameObject.SetActive(false);
-        backButton.SetActive(false);
     }
 
     public void ExitButton()
@@ -43,7 +40,6 @@ public class TitleSceneManager : MonoBehaviour
     {
         hostInputField.gameObject.SetActive(true);
         gameButtonGroup.SetActive(false);
-        backButton.SetActive(true);
     }
 
     public void ConfigurateButton()
