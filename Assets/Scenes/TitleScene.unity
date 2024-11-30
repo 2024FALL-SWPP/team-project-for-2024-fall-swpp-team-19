@@ -1970,9 +1970,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a12ce07bcd763e24db0ee554093a5fc6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  volumeSlider: {fileID: 1081783064}
-  brightnessSlider: {fileID: 404659416}
-  sensitivitySlider: {fileID: 1201371127}
 --- !u!1 &760781555
 GameObject:
   m_ObjectHideFlags: 0
