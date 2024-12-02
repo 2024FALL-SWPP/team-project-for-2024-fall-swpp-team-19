@@ -9,6 +9,8 @@ public class TitleSceneManager : MonoBehaviour
     public GameObject hostInputField;
     public GameObject controlButtonGroup;
     public GameObject backButton;
+    public GameObject backGround;
+    public GameObject undoButton;
 
     private NetworkManager networkManager;
     private TMP_InputField inputField;
@@ -38,6 +40,16 @@ public class TitleSceneManager : MonoBehaviour
         controlButtonGroup.SetActive(false);
         hostInputField.SetActive(false);
         backButton.SetActive(false);
+        backGround.SetActive(true);
+    }
+
+    public void UndoButton()
+    {
+        gameButtonGroup.SetActive(false);
+        controlButtonGroup.SetActive(true);
+        hostInputField.SetActive(false);
+        backButton.SetActive(false);
+        backGround.SetActive(false);
     }
 
     public void ExitButton()
