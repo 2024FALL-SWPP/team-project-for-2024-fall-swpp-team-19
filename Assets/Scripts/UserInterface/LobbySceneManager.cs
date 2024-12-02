@@ -15,12 +15,12 @@ public class LobbySceneManager : MonoBehaviour
     public Color readyColor = Color.green;
     public Color notReadyColor = Color.red;
 
-    public TextMeshProUGUI clipboardButtonText; // Displays the room code
-    public TextMeshProUGUI playerCountText;     // Displays player count dynamically
+    public TextMeshProUGUI clipboardButtonText;
+    public TextMeshProUGUI playerCountText;
 
     private GameObject selectedCharacter;
 
-    private int previousPlayerCount = -1;       // For tracking changes
+    private int previousPlayerCount = -1;
     private string previousRoomCode = "";
 
     void Start()
@@ -37,7 +37,7 @@ public class LobbySceneManager : MonoBehaviour
 
         UpdateReadyButtonUI();
         UpdatePlayerCount();
-        UpdateClipboardButtonUI();
+        UpdateClipboardButtonUI(); // Ensure the room code is set at the start
     }
 
     void Update()
@@ -45,7 +45,6 @@ public class LobbySceneManager : MonoBehaviour
         CustomRoomManager roomManager = NetworkManager.singleton as CustomRoomManager;
         if (roomManager != null)
         {
-            // Check for player count changes
             int currentPlayerCount = roomManager.roomSlots.Count;
             if (currentPlayerCount != previousPlayerCount)
             {
@@ -53,7 +52,6 @@ public class LobbySceneManager : MonoBehaviour
                 previousPlayerCount = currentPlayerCount;
             }
 
-            // Check for room code changes
             string currentRoomCode = roomManager.GetRoomCode();
             if (currentRoomCode != previousRoomCode)
             {
@@ -124,16 +122,8 @@ public class LobbySceneManager : MonoBehaviour
 
     void UpdateReadyButtonUI()
     {
-        if (isReady)
-        {
-            readyButtonText.text = "Ready";
-            readyButton.image.color = readyColor;
-        }
-        else
-        {
-            readyButtonText.text = "Not Ready";
-            readyButton.image.color = notReadyColor;
-        }
+        readyButtonText.text = isReady ? "Ready" : "Not Ready";
+        readyButton.image.color = isReady ? readyColor : notReadyColor;
     }
 
     void UpdateClipboardButtonUI()
@@ -143,15 +133,9 @@ public class LobbySceneManager : MonoBehaviour
         if (roomManager != null && clipboardButtonText != null)
         {
             string roomCode = roomManager.GetRoomCode();
-
-            if (!string.IsNullOrEmpty(roomCode))
-            {
-                clipboardButtonText.text = $"Room Code: {roomCode}";
-            }
-            else
-            {
-                clipboardButtonText.text = "Room Code: Not Available";
-            }
+            clipboardButtonText.text = !string.IsNullOrEmpty(roomCode) 
+                ? $"Room Code: {roomCode}" 
+                : "Room Code: Not Available";
         }
         else
         {
