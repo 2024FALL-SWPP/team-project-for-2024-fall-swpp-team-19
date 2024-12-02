@@ -1,20 +1,21 @@
-using Mirror; // Ensure you import Mirror namespace for multiplayer functionality
+using Mirror;
 using UnityEngine;
 
 public class ServerPlayerController : NetworkBehaviour
 {
-    public float speed = 50.0f;          // Speed of movement
-    public float jumpForce = 8.0f;      // Jump force
+    public float speed = 50.0f;
+    public float jumpForce = 8.0f;
     private Rigidbody rb;
     private bool isGrounded;
     private Animator animator;
+
+    public float interactionRange = 5.0f;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
 
-        // Disable this script for non-local players
         if (!isLocalPlayer)
         {
             enabled = false;
@@ -23,7 +24,6 @@ public class ServerPlayerController : NetworkBehaviour
 
     void Update()
     {
-        // Ensure only the local player processes input
         if (!isLocalPlayer) return;
 
         MovePlayer();
@@ -37,14 +37,11 @@ public class ServerPlayerController : NetworkBehaviour
 
     void MovePlayer()
     {
-        // Get input for movement
         float moveHorizontal = Input.GetAxis("Horizontal");
         float moveVertical = Input.GetAxis("Vertical");
 
-        // Calculate movement relative to the character's current facing direction
         Vector3 moveDirection = transform.right * moveHorizontal + transform.forward * moveVertical;
 
-        // Normalize movement direction to prevent faster diagonal movement and move the character
         rb.MovePosition(transform.position + moveDirection.normalized * speed * Time.deltaTime);
     }
 
@@ -59,7 +56,29 @@ public class ServerPlayerController : NetworkBehaviour
 
     void Interaction()
     {
-        animator.SetTrigger("Interaction"); // Trigger the wielding animation
+        animator.SetTrigger("Interaction");
+
+        Collider[] colliders = Physics.OverlapSphere(transform.position, interactionRange);
+
+        foreach (var collider in colliders)
+        {
+            MiniGameBase miniGame = collider.GetComponent<MiniGameBase>();
+            if (miniGame != null)
+            {
+                CustomGamePlayer player = GetComponent<CustomGamePlayer>();
+                if (player != null && miniGame.RegisterPlayer(connectionToClient, player))
+                {
+                    Debug.Log("Player registered to the mini-game.");
+                }
+                else
+                {
+                    Debug.Log("Mini-game is full or registration failed.");
+                }
+                return;
+            }
+        }
+
+        Debug.Log("No mini-game found nearby.");
     }
 
     private void OnCollisionEnter(Collision collision)
