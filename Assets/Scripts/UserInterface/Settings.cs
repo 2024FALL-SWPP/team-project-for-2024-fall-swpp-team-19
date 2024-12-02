@@ -3,17 +3,31 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 public class Settings : MonoBehaviour
 {
    [Header("UI Sliders")]
+
+    [Header("Post Processing")]
+    public Volume postProcessingVolume; // Post Processing Volume
+
+    private ColorAdjustments colorAdjustments;
+   
     public Slider volumeSlider;
     public Slider brightnessSlider;
     public Slider sensitivitySlider;
 
-    public Image brightnessOverlay; 
+ 
 
     void Start()
     {
+
+         if (postProcessingVolume.profile.TryGet<ColorAdjustments>(out colorAdjustments))
+        {
+            float savedBrightness = PlayerPrefs.GetFloat("Brightness", 0.5f);
+            UpdateBrightness(savedBrightness); // 초기값 적용
+        }
         // Set initial values
         volumeSlider.value = PlayerPrefs.GetFloat("Volume", 0.5f);
         brightnessSlider.value = PlayerPrefs.GetFloat("Brightness", 0.5f);
@@ -36,10 +50,11 @@ public class Settings : MonoBehaviour
     {
         PlayerPrefs.SetFloat("Brightness", value);
 
-        // Adjust the alpha channel of the overlay
-        Color color = brightnessOverlay.color;
-        color.a = 1.0f - value; // value가 높을수록 더 밝게
-        brightnessOverlay.color = color;
+        if (colorAdjustments != null)
+        {
+            // Exposure 값 설정 (밝기 조정)
+            colorAdjustments.postExposure.value = Mathf.Lerp(-2f, 2f, value); // -2에서 2 사이 값으로 조정
+        }
 
         Debug.Log($"Brightness set to: {value}");
     }
