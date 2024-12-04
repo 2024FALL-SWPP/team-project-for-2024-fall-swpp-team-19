@@ -9,7 +9,7 @@ public class ServerPlayerController : NetworkBehaviour
     private bool isGrounded;
     private Animator animator;
 
-    public float interactionRange = 50.0f;
+    public float interactionRange = 400.0f;
 
     private void Start()
     {
@@ -55,23 +55,32 @@ public class ServerPlayerController : NetworkBehaviour
     }
 
     private void HandleInteraction()
-    {
+    { 
         animator.SetTrigger("Interaction");
 
         Collider[] colliders = Physics.OverlapSphere(transform.position, interactionRange);
+        Debug.Log($"[ServerPlayerController] Player {netId} attempting interaction. Detected {colliders.Length} objects in range.");
+
+        foreach (var collider in colliders)
+        {
+            Debug.Log($"[ServerPlayerController] Detected object: {collider.gameObject.name}");
+        }
 
         foreach (var collider in colliders)
         {
             RegisterableDevice device = collider.GetComponent<RegisterableDevice>();
             if (device != null)
             {
+                Debug.Log($"[ServerPlayerController] Player {netId} found a RegisterableDevice: {device.gameObject.name}. Sending interaction request.");
                 CmdTryInteractWithDevice(device.gameObject);
                 return;
             }
         }
 
-        Debug.Log("No interactable device found nearby.");
+        Debug.Log($"[ServerPlayerController] Player {netId} found no valid RegisterableDevice nearby.");
     }
+
+
 
     private void OnCollisionEnter(Collision collision)
     {
@@ -90,16 +99,16 @@ public class ServerPlayerController : NetworkBehaviour
             bool success = device.RegisterPlayer(GetComponent<CustomGamePlayer>());
             if (success)
             {
-                Debug.Log($"Player {netId} successfully connected to the mini-game.");
+                Debug.Log($"[ServerPlayerController] Player {netId} successfully connected to the mini-game.");
             }
             else
             {
-                Debug.Log($"Player {netId} failed to connect to the mini-game.");
+                Debug.Log($"[ServerPlayerController] Player {netId} failed to connect to the mini-game. Check logs in MiniGameBase for details.");
             }
         }
         else
         {
-            Debug.Log($"No valid RegisterableDevice found for interaction by Player {netId}.");
+            Debug.Log($"[ServerPlayerController] No valid RegisterableDevice found for Player {netId}.");
         }
     }
 }

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8646428636922394621}
   - component: {fileID: -6261698118671957297}
   - component: {fileID: -3356870780549494317}
+  - component: {fileID: -4804908246944220469}
   m_Layer: 0
   m_Name: GuardianMinigameDevice
   m_TagString: Untagged
@@ -67,6 +68,19 @@ MonoBehaviour:
   serverOnly: 0
   visibility: 0
   hasSpawned: 0
+--- !u!65 &-4804908246944220469
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1993333480318940484}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &2281841116738857010
 PrefabInstance:
   m_ObjectHideFlags: 0
