@@ -9,9 +9,9 @@ public class ServerPlayerController : NetworkBehaviour
     private bool isGrounded;
     private Animator animator;
 
-    public float interactionRange = 5.0f;
+    public float interactionRange = 50.0f;
 
-    void Start()
+    private void Start()
     {
         rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
@@ -22,20 +22,20 @@ public class ServerPlayerController : NetworkBehaviour
         }
     }
 
-    void Update()
+    private void Update()
     {
         if (!isLocalPlayer) return;
 
-        MovePlayer();
-        Jump();
+        HandleMovement();
+        HandleJump();
 
         if (Input.GetKeyDown(KeyCode.E))
         {
-            Interaction();
+            HandleInteraction();
         }
     }
 
-    void MovePlayer()
+    private void HandleMovement()
     {
         float moveHorizontal = Input.GetAxis("Horizontal");
         float moveVertical = Input.GetAxis("Vertical");
@@ -45,7 +45,7 @@ public class ServerPlayerController : NetworkBehaviour
         rb.MovePosition(transform.position + moveDirection.normalized * speed * Time.deltaTime);
     }
 
-    void Jump()
+    private void HandleJump()
     {
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
@@ -54,7 +54,7 @@ public class ServerPlayerController : NetworkBehaviour
         }
     }
 
-    void Interaction()
+    private void HandleInteraction()
     {
         animator.SetTrigger("Interaction");
 
@@ -62,23 +62,15 @@ public class ServerPlayerController : NetworkBehaviour
 
         foreach (var collider in colliders)
         {
-            MiniGameBase miniGame = collider.GetComponent<MiniGameBase>();
-            if (miniGame != null)
+            RegisterableDevice device = collider.GetComponent<RegisterableDevice>();
+            if (device != null)
             {
-                CustomGamePlayer player = GetComponent<CustomGamePlayer>();
-                if (player != null && miniGame.RegisterPlayer(connectionToClient, player))
-                {
-                    Debug.Log("Player registered to the mini-game.");
-                }
-                else
-                {
-                    Debug.Log("Mini-game is full or registration failed.");
-                }
+                CmdTryInteractWithDevice(device.gameObject);
                 return;
             }
         }
 
-        Debug.Log("No mini-game found nearby.");
+        Debug.Log("No interactable device found nearby.");
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -86,6 +78,28 @@ public class ServerPlayerController : NetworkBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             isGrounded = true;
+        }
+    }
+
+    [Command]
+    private void CmdTryInteractWithDevice(GameObject deviceObject)
+    {
+        RegisterableDevice device = deviceObject.GetComponent<RegisterableDevice>();
+        if (device != null)
+        {
+            bool success = device.RegisterPlayer(GetComponent<CustomGamePlayer>());
+            if (success)
+            {
+                Debug.Log($"Player {netId} successfully connected to the mini-game.");
+            }
+            else
+            {
+                Debug.Log($"Player {netId} failed to connect to the mini-game.");
+            }
+        }
+        else
+        {
+            Debug.Log($"No valid RegisterableDevice found for interaction by Player {netId}.");
         }
     }
 }
