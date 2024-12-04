@@ -625,9 +625,9 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  speed: 2000
+  speed: 200
   jumpForce: 8
-  interactionRange: 5
+  interactionRange: 300
 --- !u!114 &2825991980363391743
 MonoBehaviour:
   m_ObjectHideFlags: 0

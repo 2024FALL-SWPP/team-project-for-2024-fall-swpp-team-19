@@ -9,12 +9,14 @@ public class ServerPlayerController : NetworkBehaviour
     private bool isGrounded;
     private Animator animator;
 
-    public float interactionRange = 400.0f;
+    public float interactionRange = 50.0f;
+    private CustomGamePlayer customPlayer;
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
+        customPlayer = GetComponent<CustomGamePlayer>();
 
         if (!isLocalPlayer)
         {
@@ -25,6 +27,13 @@ public class ServerPlayerController : NetworkBehaviour
     private void Update()
     {
         if (!isLocalPlayer) return;
+
+        // Prevent movement if in a mini-game
+        if (customPlayer != null && customPlayer.isInMiniGame)
+        {
+            Debug.Log($"[ServerPlayerController] Player {netId} is in a mini-game. Movement disabled.");
+            return;
+        }
 
         HandleMovement();
         HandleJump();
@@ -55,19 +64,16 @@ public class ServerPlayerController : NetworkBehaviour
     }
 
     private void HandleInteraction()
-    { 
+    {
         animator.SetTrigger("Interaction");
 
         Collider[] colliders = Physics.OverlapSphere(transform.position, interactionRange);
-        Debug.Log($"[ServerPlayerController] Player {netId} attempting interaction. Detected {colliders.Length} objects in range.");
+        Debug.Log($"[ServerPlayerController] Player {netId} attempting interaction. {colliders.Length} objects in range.");
 
         foreach (var collider in colliders)
         {
-            Debug.Log($"[ServerPlayerController] Detected object: {collider.gameObject.name}");
-        }
+            Debug.Log($"[ServerPlayerController] Player {netId} detected object: {collider.gameObject.name}");
 
-        foreach (var collider in colliders)
-        {
             RegisterableDevice device = collider.GetComponent<RegisterableDevice>();
             if (device != null)
             {
@@ -79,8 +85,6 @@ public class ServerPlayerController : NetworkBehaviour
 
         Debug.Log($"[ServerPlayerController] Player {netId} found no valid RegisterableDevice nearby.");
     }
-
-
 
     private void OnCollisionEnter(Collision collision)
     {
@@ -96,7 +100,7 @@ public class ServerPlayerController : NetworkBehaviour
         RegisterableDevice device = deviceObject.GetComponent<RegisterableDevice>();
         if (device != null)
         {
-            bool success = device.RegisterPlayer(GetComponent<CustomGamePlayer>());
+            bool success = device.RegisterPlayer(customPlayer);
             if (success)
             {
                 Debug.Log($"[ServerPlayerController] Player {netId} successfully connected to the mini-game.");

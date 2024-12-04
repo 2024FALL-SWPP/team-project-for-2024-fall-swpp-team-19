@@ -7,6 +7,11 @@ public abstract class MiniGameBase : NetworkBehaviour
     public List<CustomGamePlayer> currentPlayers = new List<CustomGamePlayer>();
     private Canvas miniGameCanvas;
 
+    [SerializeField]
+    private int requiredPlayersToStart = 1; // Number of players required to start the game, configurable in the Inspector.
+
+    private bool gameStarted = false;
+
     private void Awake()
     {
         InitializeCanvas();
@@ -35,13 +40,20 @@ public abstract class MiniGameBase : NetworkBehaviour
     {
         if (currentPlayers.Contains(player))
         {
-            Debug.Log($"Player {player.netId} is already registered.");
+            Debug.Log($"[MiniGameBase] Player {player.netId} is already registered.");
             return false;
         }
 
         currentPlayers.Add(player);
         OnPlayerRegistered(conn, player);
-        Debug.Log($"Player {player.netId} successfully registered.");
+        Debug.Log($"[MiniGameBase] Player {player.netId} successfully registered.");
+
+        // Check if the required number of players has been met to start the game.
+        if (!gameStarted && currentPlayers.Count >= requiredPlayersToStart)
+        {
+            StartGame();
+        }
+
         return true;
     }
 
@@ -50,19 +62,29 @@ public abstract class MiniGameBase : NetworkBehaviour
     {
         if (!currentPlayers.Contains(player))
         {
-            Debug.Log($"Player {player.netId} is not registered.");
+            Debug.Log($"[MiniGameBase] Player {player.netId} is not registered.");
             return false;
         }
 
         currentPlayers.Remove(player);
         OnPlayerUnregistered(conn, player);
-        Debug.Log($"Player {player.netId} successfully unregistered.");
+        Debug.Log($"[MiniGameBase] Player {player.netId} successfully unregistered.");
+
+        // Stop the game if players drop below the required number.
+        if (gameStarted && currentPlayers.Count < requiredPlayersToStart)
+        {
+            EndGame();
+        }
+
         return true;
     }
 
     [Server]
     public virtual void StartGame()
     {
+        gameStarted = true;
+
+        Debug.Log("[MiniGameBase] Game started!");
         if (miniGameCanvas != null)
         {
             RpcShowCanvasToPlayers();
@@ -72,6 +94,9 @@ public abstract class MiniGameBase : NetworkBehaviour
     [Server]
     public virtual void EndGame()
     {
+        gameStarted = false;
+
+        Debug.Log("[MiniGameBase] Game ended.");
         if (miniGameCanvas != null)
         {
             RpcHideCanvasFromPlayers();
@@ -82,6 +107,7 @@ public abstract class MiniGameBase : NetworkBehaviour
     [Server]
     public virtual void ResetGame()
     {
+        gameStarted = false;
         currentPlayers.Clear();
     }
 
