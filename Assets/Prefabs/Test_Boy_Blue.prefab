@@ -516,6 +516,7 @@ GameObject:
   - component: {fileID: -2463018288348841512}
   - component: {fileID: 3951618464430505766}
   - component: {fileID: 2825991980363391743}
+  - component: {fileID: -8185437529953366271}
   m_Layer: 0
   m_Name: Test_Boy_Blue
   m_TagString: Character1
@@ -624,8 +625,9 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  speed: 2000
+  speed: 200
   jumpForce: 8
+  interactionRange: 300
 --- !u!114 &2825991980363391743
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -659,6 +661,32 @@ MonoBehaviour:
   rotationSensitivity: 0.01
   positionPrecision: 0.01
   scalePrecision: 0.01
+--- !u!114 &-8185437529953366271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4806848440662003467}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae152565c62f88346bf7ba65ca3de383, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  InputData:
+    MousePosition: {x: 0, y: 0}
+    IsMouseClicked: 0
+    IsMouseReleased: 0
+    IsMovingUp: 0
+    IsMovingDown: 0
+    IsMovingLeft: 0
+    IsMovingRight: 0
+    IsInteracting: 0
+    IsInteractionReleased: 0
+  isInMiniGame: 0
 --- !u!1 &5506513223644934172
 GameObject:
   m_ObjectHideFlags: 0

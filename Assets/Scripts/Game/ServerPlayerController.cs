@@ -1,54 +1,60 @@
-using Mirror; // Ensure you import Mirror namespace for multiplayer functionality
+using Mirror;
 using UnityEngine;
 
 public class ServerPlayerController : NetworkBehaviour
 {
-    public float speed = 50.0f;          // Speed of movement
-    public float jumpForce = 8.0f;      // Jump force
+    public float speed = 50.0f;
+    public float jumpForce = 8.0f;
     private Rigidbody rb;
     private bool isGrounded;
     private Animator animator;
 
-    void Start()
+    public float interactionRange = 50.0f;
+    private CustomGamePlayer customPlayer;
+
+    private void Start()
     {
         rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
+        customPlayer = GetComponent<CustomGamePlayer>();
 
-        // Disable this script for non-local players
         if (!isLocalPlayer)
         {
             enabled = false;
         }
     }
 
-    void Update()
+    private void Update()
     {
-        // Ensure only the local player processes input
         if (!isLocalPlayer) return;
 
-        MovePlayer();
-        Jump();
+        // Prevent movement if in a mini-game
+        if (customPlayer != null && customPlayer.isInMiniGame)
+        {
+            Debug.Log($"[ServerPlayerController] Player {netId} is in a mini-game. Movement disabled.");
+            return;
+        }
+
+        HandleMovement();
+        HandleJump();
 
         if (Input.GetKeyDown(KeyCode.E))
         {
-            Interaction();
+            HandleInteraction();
         }
     }
 
-    void MovePlayer()
+    private void HandleMovement()
     {
-        // Get input for movement
         float moveHorizontal = Input.GetAxis("Horizontal");
         float moveVertical = Input.GetAxis("Vertical");
 
-        // Calculate movement relative to the character's current facing direction
         Vector3 moveDirection = transform.right * moveHorizontal + transform.forward * moveVertical;
 
-        // Normalize movement direction to prevent faster diagonal movement and move the character
         rb.MovePosition(transform.position + moveDirection.normalized * speed * Time.deltaTime);
     }
 
-    void Jump()
+    private void HandleJump()
     {
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
@@ -57,9 +63,27 @@ public class ServerPlayerController : NetworkBehaviour
         }
     }
 
-    void Interaction()
+    private void HandleInteraction()
     {
-        animator.SetTrigger("Interaction"); // Trigger the wielding animation
+        animator.SetTrigger("Interaction");
+
+        Collider[] colliders = Physics.OverlapSphere(transform.position, interactionRange);
+        Debug.Log($"[ServerPlayerController] Player {netId} attempting interaction. {colliders.Length} objects in range.");
+
+        foreach (var collider in colliders)
+        {
+            Debug.Log($"[ServerPlayerController] Player {netId} detected object: {collider.gameObject.name}");
+
+            RegisterableDevice device = collider.GetComponent<RegisterableDevice>();
+            if (device != null)
+            {
+                Debug.Log($"[ServerPlayerController] Player {netId} found a RegisterableDevice: {device.gameObject.name}. Sending interaction request.");
+                CmdTryInteractWithDevice(device.gameObject);
+                return;
+            }
+        }
+
+        Debug.Log($"[ServerPlayerController] Player {netId} found no valid RegisterableDevice nearby.");
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -67,6 +91,28 @@ public class ServerPlayerController : NetworkBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             isGrounded = true;
+        }
+    }
+
+    [Command]
+    private void CmdTryInteractWithDevice(GameObject deviceObject)
+    {
+        RegisterableDevice device = deviceObject.GetComponent<RegisterableDevice>();
+        if (device != null)
+        {
+            bool success = device.RegisterPlayer(customPlayer);
+            if (success)
+            {
+                Debug.Log($"[ServerPlayerController] Player {netId} successfully connected to the mini-game.");
+            }
+            else
+            {
+                Debug.Log($"[ServerPlayerController] Player {netId} failed to connect to the mini-game. Check logs in MiniGameBase for details.");
+            }
+        }
+        else
+        {
+            Debug.Log($"[ServerPlayerController] No valid RegisterableDevice found for Player {netId}.");
         }
     }
 }
