@@ -9,18 +9,19 @@ public class TitleSceneManager : MonoBehaviour
     public GameObject hostInputField;
     public GameObject controlButtonGroup;
     public GameObject backButton;
+    public GameObject backGround;
+    public GameObject undoButton;
 
     private NetworkManager networkManager;
     private TMP_InputField inputField;
 
     private bool isConnecting = false;
-    private string serverRoomCode = "";
 
     void Start()
     {
         gameButtonGroup.SetActive(false);
         hostInputField.SetActive(false);
-        networkManager = CustomRoomManager.singleton;
+        networkManager = NetworkManager.singleton;
 
         inputField = hostInputField.GetComponent<TMP_InputField>();
         if (inputField != null)
@@ -38,6 +39,16 @@ public class TitleSceneManager : MonoBehaviour
         controlButtonGroup.SetActive(false);
         hostInputField.SetActive(false);
         backButton.SetActive(false);
+        backGround.SetActive(true);
+    }
+
+    public void UndoButton()
+    {
+        gameButtonGroup.SetActive(false);
+        controlButtonGroup.SetActive(true);
+        hostInputField.SetActive(false);
+        backButton.SetActive(false);
+        backGround.SetActive(false);
     }
 
     public void ExitButton()
@@ -86,6 +97,24 @@ public class TitleSceneManager : MonoBehaviour
             if (!string.IsNullOrEmpty(inputField.text))
             {
                 string roomCode = inputField.text;
+
+                var customRoomManager = networkManager as CustomRoomManager;
+                if (customRoomManager != null)
+                {
+                    customRoomManager.SetRoomCode(roomCode);
+                }
+
+                if (roomCode.ToLower() == "localhost")
+                {
+                    Debug.Log("Connecting to localhost...");
+                    networkManager.networkAddress = "127.0.0.1";
+                    isConnecting = true;
+
+                    networkManager.StartClient();
+                    Debug.Log("Attempting to connect to localhost...");
+                    return;
+                }
+
                 string decoded = DecodeRoomCode(roomCode);
 
                 if (!string.IsNullOrEmpty(decoded))
@@ -107,10 +136,9 @@ public class TitleSceneManager : MonoBehaviour
                                 transport.port = (ushort)port;
                             }
 
-                            serverRoomCode = roomCode;
                             isConnecting = true;
 
-                            NetworkClient.Connect(ipAddress);
+                            networkManager.StartClient();
                             Debug.Log("Checking room existence...");
                         }
                         else
@@ -148,10 +176,7 @@ public class TitleSceneManager : MonoBehaviour
         Debug.Log("Client successfully connected to the server.");
         isConnecting = false;
 
-        var customRoomManager = (CustomRoomManager)networkManager;
-        customRoomManager.SetRoomCode(serverRoomCode);
 
-        SceneManager.LoadScene("LobbyScene");
     }
 
     private void OnClientDisconnected()
