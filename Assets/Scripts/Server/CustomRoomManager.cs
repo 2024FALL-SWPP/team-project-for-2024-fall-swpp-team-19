@@ -7,6 +7,10 @@ public class CustomRoomManager : NetworkRoomManager
     public bool playerCountDirty = true;
     public bool roomCodeDirty = true;
 
+
+
+
+
     public override void OnServerConnect(NetworkConnectionToClient conn)
     {
         base.OnServerConnect(conn);
