@@ -1,42 +1,69 @@
 using System.Collections.Generic;
-using UnityEngine;
 using Mirror;
+using UnityEngine;
 
 public abstract class MiniGameBase : NetworkBehaviour
 {
+    [SyncVar] public bool gameStarted = false;
+
+    // Server-side list of players currently in the mini-game
     public List<CustomGamePlayer> currentPlayers = new List<CustomGamePlayer>();
+
+    // SyncList to track player netIds for all clients
+    public SyncList<uint> playerIdsInGame = new SyncList<uint>();
+
     private Canvas miniGameCanvas;
 
-    [SerializeField]
-    private int requiredPlayersToStart = 1; // Number of players required to start the game, configurable in the Inspector.
-
-    private bool gameStarted = false;
-
-    private void Awake()
+    [SerializeField] private int requiredPlayersToStart = 1;
+    public override void OnStartClient()
     {
+        base.OnStartClient();
         InitializeCanvas();
+        ShowCanvasIfLocalPlayerIsInGame();
+
+        // Subscribe using the correct delegate signature
+        playerIdsInGame.OnChange += OnPlayerIdsChanged;
     }
 
+    private void OnPlayerIdsChanged(SyncList<uint>.Operation op, int index, uint item)
+    {
+        ShowCanvasIfLocalPlayerIsInGame();
+    }
     private void InitializeCanvas()
     {
         miniGameCanvas = GetComponentInChildren<Canvas>();
         if (miniGameCanvas != null)
         {
-            miniGameCanvas.enabled = false;
+            miniGameCanvas.enabled = false; // Disable by default
+            Debug.Log($"[MiniGameBase] Canvas initialized on client for {gameObject.name}.");
         }
         else
         {
-            Debug.LogError($"MiniGameBase: No Canvas found in children of {gameObject.name}");
+            Debug.LogError($"[MiniGameBase] No Canvas found in children of {gameObject.name}.");
         }
     }
 
-    public Canvas GetCanvas()
+    private void ShowCanvasIfLocalPlayerIsInGame()
     {
-        return miniGameCanvas;
+        if (miniGameCanvas == null) return;
+
+        var localPlayer = NetworkClient.localPlayer;
+        if (localPlayer == null) return;
+
+        if (playerIdsInGame.Contains(localPlayer.netId))
+        {
+            miniGameCanvas.enabled = true;
+            Debug.Log($"[MiniGameBase] Canvas enabled for local player {localPlayer.netId}.");
+        }
+        else
+        {
+            miniGameCanvas.enabled = false;
+            Debug.Log($"[MiniGameBase] Canvas hidden for local player {localPlayer.netId}.");
+        }
     }
 
     [Server]
-    public virtual bool RegisterPlayer(NetworkConnectionToClient conn, CustomGamePlayer player)
+    public virtual bool RegisterPlayer(CustomGamePlayer player)
     {
         if (currentPlayers.Contains(player))
         {
@@ -45,10 +72,11 @@ public abstract class MiniGameBase : NetworkBehaviour
         }
 
         currentPlayers.Add(player);
-        OnPlayerRegistered(conn, player);
-        Debug.Log($"[MiniGameBase] Player {player.netId} successfully registered.");
+        playerIdsInGame.Add(player.netId);
+        player.isInMiniGame = true;
+        OnPlayerRegistered(player);
 
-        // Check if the required number of players has been met to start the game.
+        Debug.Log($"[MiniGameBase] Player {player.netId} successfully registered.");
         if (!gameStarted && currentPlayers.Count >= requiredPlayersToStart)
         {
             StartGame();
@@ -58,50 +86,42 @@ public abstract class MiniGameBase : NetworkBehaviour
     }
 
     [Server]
-    public virtual bool UnregisterPlayer(NetworkConnectionToClient conn, CustomGamePlayer player)
+    public virtual void UnregisterPlayer(CustomGamePlayer player)
     {
-        if (!currentPlayers.Contains(player))
-        {
-            Debug.Log($"[MiniGameBase] Player {player.netId} is not registered.");
-            return false;
-        }
+        if (!currentPlayers.Contains(player)) return;
 
         currentPlayers.Remove(player);
-        OnPlayerUnregistered(conn, player);
+        playerIdsInGame.Remove(player.netId);
+        player.isInMiniGame = false;
+        OnPlayerUnregistered(player);
+
         Debug.Log($"[MiniGameBase] Player {player.netId} successfully unregistered.");
 
-        // Stop the game if players drop below the required number.
         if (gameStarted && currentPlayers.Count < requiredPlayersToStart)
         {
             EndGame();
         }
-
-        return true;
     }
 
     [Server]
     public virtual void StartGame()
     {
         gameStarted = true;
-
         Debug.Log("[MiniGameBase] Game started!");
-        if (miniGameCanvas != null)
-        {
-            RpcShowCanvasToPlayers();
-        }
+        RpcUpdateGameState();
     }
 
     [Server]
     public virtual void EndGame()
     {
         gameStarted = false;
+        Debug.Log("[MiniGameBase] Game ended!");
 
-        Debug.Log("[MiniGameBase] Game ended.");
-        if (miniGameCanvas != null)
-        {
-            RpcHideCanvasFromPlayers();
-        }
+        // Clear server-side tracking
         currentPlayers.Clear();
+        playerIdsInGame.Clear();
+
+        RpcUpdateGameState();
     }
 
     [Server]
@@ -109,63 +129,47 @@ public abstract class MiniGameBase : NetworkBehaviour
     {
         gameStarted = false;
         currentPlayers.Clear();
+        playerIdsInGame.Clear();
     }
 
     [ServerCallback]
+    private void Update()
+    {
+        // Ensure game logic updates on the server each frame
+        UpdateGameLogic();
+    }
+
+    [Server]
     public virtual void UpdateGameLogic()
     {
-        foreach (var player in currentPlayers)
-        {
-            HandlePlayerInput(player);
-        }
+        // Implement logic in subclasses if needed
     }
 
     [Server]
     protected virtual void HandlePlayerInput(CustomGamePlayer player)
     {
-    }
-
-    [TargetRpc]
-    private void TargetShowCanvas(NetworkConnection conn)
-    {
-        if (miniGameCanvas != null)
-        {
-            miniGameCanvas.enabled = true;
-        }
-    }
-
-    [TargetRpc]
-    private void TargetHideCanvas(NetworkConnection conn)
-    {
-        if (miniGameCanvas != null)
-        {
-            miniGameCanvas.enabled = false;
-        }
+        // Override in subclasses to handle input
     }
 
     [ClientRpc]
-    private void RpcShowCanvasToPlayers()
+    private void RpcUpdateGameState()
     {
-        if (miniGameCanvas != null)
-        {
-            miniGameCanvas.enabled = true;
-        }
+        // Re-check if the local player is in the game to update UI
+        ShowCanvasIfLocalPlayerIsInGame();
     }
 
-    [ClientRpc]
-    private void RpcHideCanvasFromPlayers()
+    protected virtual void OnPlayerRegistered(CustomGamePlayer player)
     {
-        if (miniGameCanvas != null)
-        {
-            miniGameCanvas.enabled = false;
-        }
+        Debug.Log($"[MiniGameBase] Player {player.netId} registered in mini-game {gameObject.name}.");
     }
 
-    protected virtual void OnPlayerRegistered(NetworkConnectionToClient conn, CustomGamePlayer player)
+    protected virtual void OnPlayerUnregistered(CustomGamePlayer player)
     {
+        Debug.Log($"[MiniGameBase] Player {player.netId} unregistered from mini-game {gameObject.name}.");
     }
 
-    protected virtual void OnPlayerUnregistered(NetworkConnectionToClient conn, CustomGamePlayer player)
+    public Canvas GetCanvas()
     {
+        return miniGameCanvas;
     }
 }
