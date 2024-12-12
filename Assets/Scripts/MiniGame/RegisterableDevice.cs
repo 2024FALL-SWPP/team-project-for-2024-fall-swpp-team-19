@@ -1,54 +1,51 @@
-using UnityEngine;
 using Mirror;
+using UnityEngine;
 
 public class RegisterableDevice : NetworkBehaviour
 {
-    public GameObject miniGamePrefab;
+    public GameObject miniGamePrefab; // Mini-game prefab reference
     private MiniGameBase activeMiniGame;
 
+    [Server]
     public bool RegisterPlayer(CustomGamePlayer player)
     {
         if (player.isInMiniGame)
         {
-            Debug.Log($"Player {player.netId} is already in a mini-game.");
+            Debug.Log($"[RegisterableDevice] Player {player.netId} is already in a mini-game.");
             return false;
         }
 
         if (activeMiniGame == null)
         {
-            activeMiniGame = Instantiate(miniGamePrefab).GetComponent<MiniGameBase>();
-            NetworkServer.Spawn(activeMiniGame.gameObject);
-        }
-
-        bool registered = activeMiniGame.RegisterPlayer(player.connectionToClient, player);
-
-        if (registered)
-        {
-            player.isInMiniGame = true;
-            var miniGameIdentity = activeMiniGame.GetComponent<NetworkIdentity>();
-            TargetShowMiniGameCanvas(player.connectionToClient, miniGameIdentity);
-            Debug.Log($"Player {player.netId} successfully registered to the mini-game.");
-            return true;
-        }
-        else
-        {
-            Debug.Log($"Mini-game registration failed for Player {player.netId}.");
-            return false;
-        }
-    }
-
-    [TargetRpc]
-    private void TargetShowMiniGameCanvas(NetworkConnection conn, NetworkIdentity miniGameIdentity)
-    {
-        var miniGame = miniGameIdentity.GetComponent<MiniGameBase>();
-        if (miniGame != null)
-        {
-            var canvas = miniGame.GetCanvas();
-            if (canvas != null)
+            // Spawn the mini-game instance if it doesn't exist
+            if (miniGamePrefab == null)
             {
-                canvas.enabled = true;
+                Debug.LogError("[RegisterableDevice] Mini-game prefab is not assigned!");
+                return false;
+            }
+
+            activeMiniGame = Instantiate(miniGamePrefab).GetComponent<MiniGameBase>();
+            if (activeMiniGame != null)
+            {
+                NetworkServer.Spawn(activeMiniGame.gameObject);
+                Debug.Log("[RegisterableDevice] Mini-game instance created and spawned.");
+            }
+            else
+            {
+                Debug.LogError("[RegisterableDevice] Failed to get MiniGameBase from prefab.");
+                return false;
             }
         }
+
+        // Register the player in the mini-game
+        return activeMiniGame.RegisterPlayer(player);
+    }
+
+    [Server]
+    public void UnregisterPlayer(CustomGamePlayer player)
+    {
+        if (activeMiniGame == null) return;
+
+        activeMiniGame.UnregisterPlayer(player);
     }
 }
-// }

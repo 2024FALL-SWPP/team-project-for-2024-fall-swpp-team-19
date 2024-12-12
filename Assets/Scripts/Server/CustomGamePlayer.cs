@@ -3,8 +3,8 @@ using UnityEngine;
 
 public class CustomGamePlayer : NetworkBehaviour
 {
+    [SyncVar] public bool isInMiniGame = false;
     public PlayerInputData InputData = new PlayerInputData();
-    public bool isInMiniGame = false;
 
     private void Update()
     {
@@ -27,18 +27,10 @@ public class CustomGamePlayer : NetworkBehaviour
     }
 
     [Command]
-    public void CmdUpdateInput(PlayerInputData input)
+    private void CmdUpdateInput(PlayerInputData input)
     {
         InputData = input;
-    }
-
-    public void EnterMiniGame()
-    {
-        isInMiniGame = true;
-    }
-
-    public void ExitMiniGame()
-    {
-        isInMiniGame = false;
+        Debug.Log($"[CustomGamePlayer] Server received new input from Player {netId}: " +
+                  $"Left={input.IsMovingLeft}, Right={input.IsMovingRight}, Interact={input.IsInteracting}");
     }
 }
