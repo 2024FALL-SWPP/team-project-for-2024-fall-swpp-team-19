@@ -2,21 +2,20 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Mirror;
+using Unity.VisualScripting;
 
 public class GuardianMinigame : MiniGameBase
 {
     public Texture2D guardianTexture1;
     public Texture2D guardianTexture2;
-    public Texture2D enemyTexture1;
-    public Texture2D enemyTexture2;
+    public Texture2D enemyTexture;
     public Texture2D cannonballTexture1;
     public Texture2D cannonballTexture2;
+    public RawImage guardian;
 
-    private List<RawImage> guardians = new List<RawImage>();
     private List<RawImage> enemies = new List<RawImage>();
 
-    private int score1 = 0;
-    private int score2 = 0;
+    private int score = 0;
 
     private float guardianSpeed = 300f;
     private float minX = -65f;
@@ -27,7 +26,6 @@ public class GuardianMinigame : MiniGameBase
     {
         base.StartGame();
         Debug.Log("[GuardianMinigame] Starting game.");
-        SpawnGuardians();
         StartEnemySpawns();
     }
 
@@ -36,10 +34,8 @@ public class GuardianMinigame : MiniGameBase
     {
         Debug.Log("[GuardianMinigame] Ending game.");
         base.EndGame();
-        CancelInvoke(nameof(SpawnEnemy1));
-        CancelInvoke(nameof(SpawnEnemy2));
+        CancelInvoke(nameof(SpawnEnemy));
         ClearEnemies();
-        ClearGuardians();
     }
 
     [Server]
@@ -70,55 +66,29 @@ public class GuardianMinigame : MiniGameBase
     {
         Debug.Log("[GuardianMinigame] Resetting game.");
         base.ResetGame();
-        score1 = 0;
-        score2 = 0;
+        score = 0;
         enemies.Clear();
-        guardians.Clear();
-    }
-
-    [Server]
-    private void SpawnGuardians()
-    {
-        Debug.Log($"[GuardianMinigame] Spawning guardians for {currentPlayers.Count} players.");
-        ClearGuardians();
-
-        for (int i = 0; i < currentPlayers.Count && i < 2; i++)
-        {
-            Texture2D texture = i == 0 ? guardianTexture1 : guardianTexture2;
-            Vector2 position = i == 0 ? new Vector2(-100, 0) : new Vector2(100, 0);
-            Vector2 size = new Vector2(100, 100);
-
-            RawImage guardian = CreateRawImage(texture, position, size);
-            if (guardian != null)
-            {
-                guardians.Add(guardian);
-            }
-        }
     }
 
     [Server]
     private void StartEnemySpawns()
     {
         Debug.Log("[GuardianMinigame] Starting enemy spawns.");
-        InvokeRepeating(nameof(SpawnEnemy1), 0f, 2f);
-        InvokeRepeating(nameof(SpawnEnemy2), 1f, 3f);
+        InvokeRepeating(nameof(SpawnEnemy), 0f, 2f);
     }
 
     [Server]
-    private void SpawnEnemy1()
+    private void SpawnEnemy()
     {
         Vector2 position = new Vector2(Random.Range(-60, 60), 80);
-        Vector2 size = new Vector2(50, 50);
-        RawImage enemy = CreateRawImage(enemyTexture1, position, size);
-        if (enemy != null) enemies.Add(enemy);
-    }
+        Vector2 size = new Vector2(40, 40);
+        Vector2 bcOffset = new Vector2(8.5f, 1.5f);
+        Vector2 bcSize = new Vector2(23, 35);
+        bool bcIsTrigger = true;
+        bool addRB = false;
 
-    [Server]
-    private void SpawnEnemy2()
-    {
-        Vector2 position = new Vector2(Random.Range(-60, 60), -80);
-        Vector2 size = new Vector2(50, 50);
-        RawImage enemy = CreateRawImage(enemyTexture2, position, size);
+        RawImage enemy = CreateRawImage(enemyTexture, position, size, bcOffset, bcSize, bcIsTrigger, addRB);
+        enemy.tag = "Enemy";
         if (enemy != null) enemies.Add(enemy);
     }
 
@@ -146,18 +116,8 @@ public class GuardianMinigame : MiniGameBase
     [Server]
     private void HandleMovement(CustomGamePlayer player, PlayerInputData input)
     {
-        int index = currentPlayers.IndexOf(player);
-        if (index < 0 || index >= guardians.Count)
-        {
-            Debug.LogWarning($"[GuardianMinigame] Cannot handle movement for Player {player.netId}, no guardian found.");
-            return;
-        }
-
         Debug.Log($"[GuardianMinigame] Handling movement for Player {player.netId}. " +
                   $"Left={input.IsMovingLeft}, Right={input.IsMovingRight}");
-
-        RawImage guardian = guardians[index];
-        if (guardian == null) return;
 
         Vector3 position = guardian.rectTransform.localPosition;
         if (input.IsMovingLeft) position.x -= guardianSpeed * Time.deltaTime;
@@ -174,32 +134,30 @@ public class GuardianMinigame : MiniGameBase
     {
         if (input.IsInteracting)
         {
-            int index = currentPlayers.IndexOf(player);
-            if (index < 0 || index >= guardians.Count)
-            {
-                Debug.LogWarning($"[GuardianMinigame] Cannot handle interaction for Player {player.netId}, no guardian found.");
-                return;
-            }
-
             Debug.Log($"[GuardianMinigame] Handling interaction for Player {player.netId}. Interacting={input.IsInteracting}");
 
-            Texture2D cannonballTexture = index == 0 ? cannonballTexture1 : cannonballTexture2;
-            Vector3 position = guardians[index].rectTransform.localPosition;
+            Texture2D cannonballTexture = cannonballTexture1;
+            Vector3 position = guardian.rectTransform.localPosition;
             position.y += 15f;
-            Vector2 size = new Vector2(20, 20);
+            Vector2 size = new Vector2(15, 15);
+            Vector2 bcOffset = new Vector2(0, 0);
+            Vector2 bcSize = new Vector2(1, 1);
+            bool bcIsTrigger = false;
+            bool addRB = true;
 
-            RawImage cannonball = CreateRawImage(cannonballTexture, position, size);
+            RawImage cannonball = CreateRawImage(cannonballTexture, position, size, bcOffset, bcSize, bcIsTrigger, addRB);
+            cannonball.AddComponent<GuardianCannonBall>();
+            cannonball.AddComponent<NetworkIdentity>();
             if (cannonball != null)
             {
-                // Cannonball will be destroyed after 3 seconds
-                Destroy(cannonball.gameObject, 3f);
                 Debug.Log($"[GuardianMinigame] Cannonball fired by Player {player.netId} at position {position}.");
             }
         }
     }
 
     [Server]
-    private RawImage CreateRawImage(Texture2D texture, Vector2 position, Vector2 size)
+    private RawImage CreateRawImage(Texture2D texture, Vector2 position, Vector2 size,
+                                    Vector2 bcOffset, Vector2 bcSize, bool bcIsTrigger, bool addRB)
     {
         Canvas canvas = GetCanvas();
         if (canvas == null)
@@ -222,6 +180,17 @@ public class GuardianMinigame : MiniGameBase
         rawImage.rectTransform.sizeDelta = size;
         rawImage.rectTransform.localPosition = position;
 
+        BoxCollider2D boxCollider = obj.AddComponent<BoxCollider2D>();
+        boxCollider.offset = bcOffset;
+        boxCollider.size = bcSize;
+        boxCollider.isTrigger = bcIsTrigger;
+
+        if (addRB)
+        {
+            Rigidbody2D rigidbody2D = obj.AddComponent<Rigidbody2D>();
+            rigidbody2D.gravityScale = 0;
+        }
+
         return rawImage;
     }
 
@@ -236,27 +205,8 @@ public class GuardianMinigame : MiniGameBase
     }
 
     [Server]
-    private void ClearGuardians()
+    public void IncrementScore()
     {
-        foreach (var guardian in guardians)
-        {
-            if (guardian != null) Destroy(guardian.gameObject);
-        }
-        guardians.Clear();
-    }
-
-    [Server]
-    public void IncrementScore(CustomGamePlayer player)
-    {
-        if (currentPlayers.Count > 0 && player == currentPlayers[0])
-        {
-            score1++;
-            Debug.Log($"[GuardianMinigame] Player {player.netId} scored! Score1: {score1}");
-        }
-        else if (currentPlayers.Count > 1 && player == currentPlayers[1])
-        {
-            score2++;
-            Debug.Log($"[GuardianMinigame] Player {player.netId} scored! Score2: {score2}");
-        }
+        score++;
     }
 }

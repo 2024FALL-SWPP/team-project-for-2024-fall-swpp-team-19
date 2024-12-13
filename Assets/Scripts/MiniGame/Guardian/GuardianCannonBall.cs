@@ -1,28 +1,17 @@
 using UnityEngine;
 using Mirror;
 
-public class GuardianCannonBall : NetworkBehaviour
+public class GuardianCannonBall : MonoBehaviour
 {
     public float speed = 500f;
 
-    [SyncVar]
-    public Vector3 currentPosition;
-
     private void Update()
     {
-        if (isServer)
-        {
-            transform.Translate(Vector3.up * speed * Time.deltaTime);
-            currentPosition = transform.localPosition;
+        transform.Translate(Vector3.up * speed * Time.deltaTime);
 
-            if (transform.localPosition.y > 90f || transform.localPosition.y < -90f)
-            {
-                NetworkServer.Destroy(gameObject);
-            }
-        }
-        else
+        if (transform.localPosition.y > 90f)
         {
-            transform.localPosition = currentPosition;
+            Destroy(gameObject);
         }
     }
 
@@ -30,12 +19,11 @@ public class GuardianCannonBall : NetworkBehaviour
     {
         if (collision.CompareTag("Enemy"))
         {
-            NetworkServer.Destroy(collision.gameObject);
-            NetworkServer.Destroy(gameObject);
+            Destroy(gameObject);
+            Destroy(collision.gameObject);
 
             var guardianMinigame = FindObjectOfType<GuardianMinigame>();
-            var owner = GetComponent<NetworkIdentity>().connectionToClient.identity.GetComponent<CustomGamePlayer>();
-            guardianMinigame.IncrementScore(owner);
+            guardianMinigame.IncrementScore();
         }
     }
 }
