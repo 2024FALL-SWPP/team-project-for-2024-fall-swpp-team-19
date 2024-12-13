@@ -16,10 +16,27 @@ public class TargetManager : NetworkBehaviour
 
     public void AssignTargets()
     {
-        for (int i = 0; i < players.Count; i++)
+        List<GameObject> availableTargets = new List<GameObject>(players);
+
+        foreach (var player in players)
         {
-            int targetIndex = (i + 1) % players.Count;
-            players[i].GetComponent<PlayerCombat>().SetTarget(players[targetIndex]);
+            if (availableTargets.Count == 1)
+            {
+                // If only one target remains, assign it to the last player
+                player.GetComponent<PlayerCombat>().SetTarget(availableTargets[0]);
+                break;
+            }
+
+            // Remove the current player from available targets to avoid self-targeting
+            availableTargets.Remove(player);
+
+            // Pick a random target from the remaining players
+            int randomIndex = Random.Range(0, availableTargets.Count);
+            GameObject target = availableTargets[randomIndex];
+
+            // Assign the target and remove it from the list
+            player.GetComponent<PlayerCombat>().SetTarget(target);
+            availableTargets.Remove(target);
         }
     }
 
