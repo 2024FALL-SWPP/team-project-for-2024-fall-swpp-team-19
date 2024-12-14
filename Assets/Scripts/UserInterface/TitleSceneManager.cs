@@ -1,10 +1,16 @@
 using Mirror;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class TitleSceneManager : MonoBehaviour
 {
+
+    public TMP_Text titleText;
+    public Color[] colors;
+    private int colorIndex = 0;
     public GameObject gameButtonGroup;
     public GameObject hostInputField;
     public GameObject controlButtonGroup;
@@ -17,8 +23,11 @@ public class TitleSceneManager : MonoBehaviour
 
     private bool isConnecting = false;
 
+
+
     void Start()
     {
+        StartCoroutine(ChangeTitleColor());
         gameButtonGroup.SetActive(false);
         hostInputField.SetActive(false);
         networkManager = NetworkManager.singleton;
@@ -28,6 +37,7 @@ public class TitleSceneManager : MonoBehaviour
         {
             inputField.onEndEdit.AddListener(OnEndEditInputField);
         }
+        
 
         NetworkClient.OnConnectedEvent += OnClientConnected;
         NetworkClient.OnDisconnectedEvent += OnClientDisconnected;
@@ -39,7 +49,7 @@ public class TitleSceneManager : MonoBehaviour
         controlButtonGroup.SetActive(false);
         hostInputField.SetActive(false);
         backButton.SetActive(false);
-        backGround.SetActive(true);
+        // backGround.SetActive(true);
     }
 
     public void UndoButton()
@@ -197,5 +207,32 @@ public class TitleSceneManager : MonoBehaviour
             Debug.LogError($"Error decoding room code: {ex.Message}");
             return null;
         }
+    }
+
+    private IEnumerator ChangeTitleColor()
+    {
+        Color startColor = titleText.color;
+        Color endColor = GetColor(colorIndex);
+        
+        float duration = 1f; // 색상이 전환되는 데 걸리는 시간
+
+        while (true)
+        {
+            colorIndex = (colorIndex + 1) % colors.Length;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                titleText.color = Color.Lerp(startColor, endColor, elapsed / duration);
+                yield return null;
+            }
+            startColor = endColor;
+            endColor = GetColor(colorIndex);
+        }
+    }
+
+    private Color GetColor(int index)
+    {
+        return colors[index];
     }
 }

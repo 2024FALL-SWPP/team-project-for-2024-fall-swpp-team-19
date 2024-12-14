@@ -9,6 +9,7 @@ public class LobbySceneManager : MonoBehaviour
 
     public Toggle[] toggles;
     public GameObject[] characters;
+    public Animator animator;
 
     public Button readyButton;
     public TextMeshProUGUI readyButtonText;
@@ -38,6 +39,8 @@ public class LobbySceneManager : MonoBehaviour
         UpdateReadyButtonUI();
         UpdatePlayerCount();
         UpdateClipboardButtonUI(); // Ensure the room code is set at the start
+        animator.SetBool("running_b", true);
+        animator.SetBool("victory_b", false);
     }
 
     void Update()
