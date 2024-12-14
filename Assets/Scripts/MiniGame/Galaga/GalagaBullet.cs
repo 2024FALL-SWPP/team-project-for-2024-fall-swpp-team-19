@@ -1,7 +1,7 @@
 using UnityEngine;
 using Mirror;
 
-public class GuardianCannonBall : MonoBehaviour
+public class GalagaBullet : MonoBehaviour
 {
     public float speed = 500f;
 
@@ -22,8 +22,8 @@ public class GuardianCannonBall : MonoBehaviour
             Destroy(gameObject);
             Destroy(collision.gameObject);
 
-            var guardianMinigame = FindObjectOfType<GuardianMinigame>();
-            guardianMinigame.IncrementScore();
+            var galagaMinigame = FindObjectOfType<GalagaMinigame>();
+            galagaMinigame.IncrementScore();
         }
     }
 }

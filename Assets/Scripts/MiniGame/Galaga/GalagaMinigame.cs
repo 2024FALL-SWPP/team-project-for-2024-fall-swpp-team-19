@@ -5,11 +5,11 @@ using UnityEngine.UI;
 using Mirror;
 using Unity.VisualScripting;
 
-public class GuardianMinigame : MiniGameBase
+public class GalagaMinigame : MiniGameBase
 {
     public Texture2D enemyTexture;
-    public Texture2D cannonballTexture;
-    public RawImage guardian;
+    public Texture2D bulletTexture;
+    public RawImage plane;
     public Text countdownText;
     public Text scoreText;
 
@@ -18,18 +18,18 @@ public class GuardianMinigame : MiniGameBase
     private int score = 0;
     private int scoreToComplete = 3;
 
-    private float guardianSpeed = 300f;
+    private float planeSpeed = 300f;
     private float minX = -65f;
     private float maxX = 65f;
 
-    private bool canShootCannonball = true;
-    private float shootCannonballDelay = 0.1f;
+    private bool canShootBullet = true;
+    private float shootBulletDelay = 0.1f;
 
     [Server]
     public override void StartGame()
     {
         base.StartGame();
-        Debug.Log("[GuardianMinigame] Starting game.");
+        Debug.Log("[GalagaMinigame] Starting game.");
         StartCoroutine(CountdownAndStart());
     }
 
@@ -49,7 +49,7 @@ public class GuardianMinigame : MiniGameBase
     [Server]
     public override void EndGame()
     {
-        Debug.Log("[GuardianMinigame] Ending game.");
+        Debug.Log("[GalagaMinigame] Ending game.");
         base.EndGame();
         CancelInvoke(nameof(SpawnEnemy));
         ClearEnemies();
@@ -61,14 +61,14 @@ public class GuardianMinigame : MiniGameBase
         base.UpdateGameLogic();
         
         // Log how many players we're processing input for this frame
-        Debug.Log($"[GuardianMinigame] UpdateGameLogic: Processing input for {currentPlayers.Count} players.");
+        Debug.Log($"[GalagaMinigame] UpdateGameLogic: Processing input for {currentPlayers.Count} players.");
 
         foreach (var player in currentPlayers)
         {
             var input = player.InputData;
             
             // Log the input data received from each player
-            Debug.Log($"[GuardianMinigame] Player {player.netId} Input: " +
+            Debug.Log($"[GalagaMinigame] Player {player.netId} Input: " +
                       $"Left={input.IsMovingLeft}, Right={input.IsMovingRight}, Interact={input.IsInteracting}");
 
             HandleMovement(player, input);
@@ -81,7 +81,7 @@ public class GuardianMinigame : MiniGameBase
     [Server]
     public override void ResetGame()
     {
-        Debug.Log("[GuardianMinigame] Resetting game.");
+        Debug.Log("[GalagaMinigame] Resetting game.");
         base.ResetGame();
         score = 0;
         enemies.Clear();
@@ -90,17 +90,17 @@ public class GuardianMinigame : MiniGameBase
     [Server]
     private void StartEnemySpawns()
     {
-        Debug.Log("[GuardianMinigame] Starting enemy spawns.");
+        Debug.Log("[GalagaMinigame] Starting enemy spawns.");
         InvokeRepeating(nameof(SpawnEnemy), 0f, 2f);
     }
 
     [Server]
     private void SpawnEnemy()
     {
-        Vector2 position = new Vector2(Random.Range(-60, 60), 80);
-        Vector2 size = new Vector2(40, 40);
-        Vector2 bcOffset = new Vector2(8.5f, 1.5f);
-        Vector2 bcSize = new Vector2(23, 35);
+        Vector2 position = new Vector2(Random.Range(-60, 60), 120);
+        Vector2 size = new Vector2(25, 25);
+        Vector2 bcOffset = new Vector2(0, 0);
+        Vector2 bcSize = new Vector2(25, 25);
         bool bcIsTrigger = true;
         bool addRB = false;
 
@@ -123,7 +123,7 @@ public class GuardianMinigame : MiniGameBase
 
             if (position.y < -100f)
             {
-                Debug.Log("[GuardianMinigame] Removing out-of-bounds enemy.");
+                Debug.Log("[GalagaMinigame] Removing out-of-bounds enemy.");
                 Destroy(enemy.gameObject);
                 enemies.RemoveAt(i);
             }
@@ -133,42 +133,42 @@ public class GuardianMinigame : MiniGameBase
     [Server]
     private void HandleMovement(CustomGamePlayer player, PlayerInputData input)
     {
-        Debug.Log($"[GuardianMinigame] Handling movement for Player {player.netId}. " +
+        Debug.Log($"[GalagaMinigame] Handling movement for Player {player.netId}. " +
                   $"Left={input.IsMovingLeft}, Right={input.IsMovingRight}");
 
-        Vector3 position = guardian.rectTransform.localPosition;
-        if (input.IsMovingLeft) position.x -= guardianSpeed * Time.deltaTime;
-        if (input.IsMovingRight) position.x += guardianSpeed * Time.deltaTime;
+        Vector3 position = plane.rectTransform.localPosition;
+        if (input.IsMovingLeft) position.x -= planeSpeed * Time.deltaTime;
+        if (input.IsMovingRight) position.x += planeSpeed * Time.deltaTime;
 
         position.x = Mathf.Clamp(position.x, minX, maxX);
-        guardian.rectTransform.localPosition = position;
+        plane.rectTransform.localPosition = position;
 
-        Debug.Log($"[GuardianMinigame] Player {player.netId} moved guardian to position {position}.");
+        Debug.Log($"[GalagaMinigame] Player {player.netId} moved plane to position {position}.");
     }
 
     [Server]
     private void HandleInteraction(CustomGamePlayer player, PlayerInputData input)
     {
-        if (input.IsInteracting && canShootCannonball)
+        if (input.IsInteracting && canShootBullet)
         {
-            canShootCannonball = false;
-            Debug.Log($"[GuardianMinigame] Handling interaction for Player {player.netId}. Interacting={input.IsInteracting}");
+            canShootBullet = false;
+            Debug.Log($"[GalagaMinigame] Handling interaction for Player {player.netId}. Interacting={input.IsInteracting}");
 
-            Texture2D texture = cannonballTexture;
-            Vector3 position = guardian.rectTransform.localPosition;
+            Texture2D texture = bulletTexture;
+            Vector3 position = plane.rectTransform.localPosition;
             position.y += 15f;
-            Vector2 size = new Vector2(15, 15);
+            Vector2 size = new Vector2(7, 14);
             Vector2 bcOffset = new Vector2(0, 0);
-            Vector2 bcSize = new Vector2(1, 1);
+            Vector2 bcSize = new Vector2(7, 14);
             bool bcIsTrigger = false;
             bool addRB = true;
 
-            RawImage cannonball = CreateRawImage(texture, position, size, bcOffset, bcSize, bcIsTrigger, addRB);
-            cannonball.AddComponent<GuardianCannonBall>();
-            cannonball.AddComponent<NetworkIdentity>();
-            if (cannonball != null)
+            RawImage bullet = CreateRawImage(texture, position, size, bcOffset, bcSize, bcIsTrigger, addRB);
+            bullet.AddComponent<GalagaBullet>();
+            bullet.AddComponent<NetworkIdentity>();
+            if (bullet != null)
             {
-                Debug.Log($"[GuardianMinigame] Cannonball fired by Player {player.netId} at position {position}.");
+                Debug.Log($"[GalagaMinigame] Bullet fired by Player {player.netId} at position {position}.");
             }
             StartCoroutine(DelayAction());
         }
@@ -178,11 +178,11 @@ public class GuardianMinigame : MiniGameBase
     IEnumerator DelayAction()
     {
         // Wait for 1 second
-        yield return new WaitForSeconds(shootCannonballDelay);
+        yield return new WaitForSeconds(shootBulletDelay);
 
         // Code to execute after the delay
-        Debug.Log("1 second delay passed!");
-        canShootCannonball = true;
+        Debug.Log("[GalagaMinigame] 1 second delay passed!");
+        canShootBullet = true;
     }
 
     [Server]
@@ -192,13 +192,13 @@ public class GuardianMinigame : MiniGameBase
         Canvas canvas = GetCanvas();
         if (canvas == null)
         {
-            Debug.LogError("[GuardianMinigame] Cannot create RawImage: Canvas is null.");
+            Debug.LogError("[GalagaMinigame] Cannot create RawImage: Canvas is null.");
             return null;
         }
 
         if (texture == null)
         {
-            Debug.LogError("[GuardianMinigame] Cannot create RawImage: Texture is null.");
+            Debug.LogError("[GalagaMinigame] Cannot create RawImage: Texture is null.");
             return null;
         }
 
