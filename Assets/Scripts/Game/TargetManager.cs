@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public class TargetManager : NetworkBehaviour
 {
+
     private List<GameObject> players = new List<GameObject>();
 
     public void RegisterPlayer(GameObject player)
@@ -63,5 +64,6 @@ public class TargetManager : NetworkBehaviour
     {
         // Load GameOver scene for all players
         UnityEngine.SceneManagement.SceneManager.LoadScene("GameOverScene");
+
     }
 }
