@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using Mirror;
@@ -6,26 +7,42 @@ using Unity.VisualScripting;
 
 public class GuardianMinigame : MiniGameBase
 {
-    public Texture2D guardianTexture1;
-    public Texture2D guardianTexture2;
     public Texture2D enemyTexture;
-    public Texture2D cannonballTexture1;
-    public Texture2D cannonballTexture2;
+    public Texture2D cannonballTexture;
     public RawImage guardian;
+    public Text countdownText;
+    public Text scoreText;
 
     private List<RawImage> enemies = new List<RawImage>();
 
     private int score = 0;
+    private int scoreToComplete = 3;
 
     private float guardianSpeed = 300f;
     private float minX = -65f;
     private float maxX = 65f;
+
+    private bool canShootCannonball = true;
+    private float shootCannonballDelay = 0.1f;
 
     [Server]
     public override void StartGame()
     {
         base.StartGame();
         Debug.Log("[GuardianMinigame] Starting game.");
+        StartCoroutine(CountdownAndStart());
+    }
+
+    [Server]
+    private IEnumerator CountdownAndStart()
+    {
+        for (int i = 3; i > 0; i--)
+        {
+            countdownText.text = i.ToString();
+            yield return new WaitForSeconds(1f);
+        }
+        countdownText.text = "";
+        scoreText.text = "Score: " + score.ToString() + "/" + scoreToComplete.ToString();
         StartEnemySpawns();
     }
 
@@ -132,11 +149,12 @@ public class GuardianMinigame : MiniGameBase
     [Server]
     private void HandleInteraction(CustomGamePlayer player, PlayerInputData input)
     {
-        if (input.IsInteracting)
+        if (input.IsInteracting && canShootCannonball)
         {
+            canShootCannonball = false;
             Debug.Log($"[GuardianMinigame] Handling interaction for Player {player.netId}. Interacting={input.IsInteracting}");
 
-            Texture2D cannonballTexture = cannonballTexture1;
+            Texture2D texture = cannonballTexture;
             Vector3 position = guardian.rectTransform.localPosition;
             position.y += 15f;
             Vector2 size = new Vector2(15, 15);
@@ -145,14 +163,26 @@ public class GuardianMinigame : MiniGameBase
             bool bcIsTrigger = false;
             bool addRB = true;
 
-            RawImage cannonball = CreateRawImage(cannonballTexture, position, size, bcOffset, bcSize, bcIsTrigger, addRB);
+            RawImage cannonball = CreateRawImage(texture, position, size, bcOffset, bcSize, bcIsTrigger, addRB);
             cannonball.AddComponent<GuardianCannonBall>();
             cannonball.AddComponent<NetworkIdentity>();
             if (cannonball != null)
             {
                 Debug.Log($"[GuardianMinigame] Cannonball fired by Player {player.netId} at position {position}.");
             }
+            StartCoroutine(DelayAction());
         }
+    }
+
+    [Server]
+    IEnumerator DelayAction()
+    {
+        // Wait for 1 second
+        yield return new WaitForSeconds(shootCannonballDelay);
+
+        // Code to execute after the delay
+        Debug.Log("1 second delay passed!");
+        canShootCannonball = true;
     }
 
     [Server]
@@ -208,5 +238,6 @@ public class GuardianMinigame : MiniGameBase
     public void IncrementScore()
     {
         score++;
+        scoreText.text = "Score: " + score.ToString() + "/" + scoreToComplete.ToString();
     }
 }
