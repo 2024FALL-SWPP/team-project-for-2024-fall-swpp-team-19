@@ -19,6 +19,7 @@ public class CustomGamePlayer : NetworkBehaviour
             IsMovingDown = Input.GetKey(KeyCode.S),
             IsMovingLeft = Input.GetKey(KeyCode.A),
             IsMovingRight = Input.GetKey(KeyCode.D),
+            IsJumping = Input.GetKey(KeyCode.Space),
             IsInteracting = Input.GetKeyDown(KeyCode.E),
             IsInteractionReleased = Input.GetKeyUp(KeyCode.E)
         };
