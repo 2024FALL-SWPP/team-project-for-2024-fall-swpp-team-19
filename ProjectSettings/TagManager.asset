@@ -8,6 +8,8 @@ TagManager:
   - Character
   - Ground
   - Enemy
+  - StarHunterGround
+  - StarHunterStar
   layers:
   - Default
   - TransparentFX
