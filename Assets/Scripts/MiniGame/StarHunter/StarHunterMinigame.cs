@@ -13,8 +13,9 @@ public class StarHunterMinigame : MiniGameBase
 
     private Rigidbody2D duckRb;
     private float duckSpeed = 300f;
-    private float duckJumpForce = 1000f;
-    private bool canMoveDuck = false;
+    private float duckJumpForce = 1400f;
+    private bool canDuckMove = false;
+    private bool canDuckJump = false;
     private int score = 0;
 
     [Server]
@@ -35,7 +36,8 @@ public class StarHunterMinigame : MiniGameBase
             yield return new WaitForSeconds(1f);
         }
         countdownText.text = "";
-        canMoveDuck = true;
+        canDuckMove = true;
+        canDuckJump = true;
     }
 
     [Server]
@@ -50,7 +52,7 @@ public class StarHunterMinigame : MiniGameBase
     {
         base.UpdateGameLogic();
 
-        if (canMoveDuck)
+        if (canDuckMove)
         {
             // Log how many players we're processing input for this frame
             Debug.Log($"[StarHunterMinigame] UpdateGameLogic: Processing input for {currentPlayers.Count} players.");
@@ -64,7 +66,7 @@ public class StarHunterMinigame : MiniGameBase
                         $"Left={input.IsMovingLeft}, Right={input.IsMovingRight}, Interact={input.IsInteracting}");
 
                 HandleMovement(player, input);
-                HandleInteraction(player, input);
+                HandleJumping(player, input);
             }
         }
     }
@@ -82,9 +84,9 @@ public class StarHunterMinigame : MiniGameBase
     }
 
     [Server]
-    private void HandleInteraction(CustomGamePlayer player, PlayerInputData input)
+    private void HandleJumping(CustomGamePlayer player, PlayerInputData input)
     {
-        if (input.IsInteracting && duckIsGrounded)
+        if (input.IsJumping && duckIsGrounded && canDuckJump)
         {
             Debug.Log($"[StarHunterMinigame] Handling interaction for Player {player.netId}. Interacting={input.IsInteracting}");
 

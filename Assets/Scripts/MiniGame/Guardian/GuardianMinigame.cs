@@ -16,14 +16,15 @@ public class GuardianMinigame : MiniGameBase
     private List<RawImage> enemies = new List<RawImage>();
 
     private int score = 0;
-    private int scoreToComplete = 3;
+    private int targetScore = 3;
 
     private float guardianSpeed = 300f;
     private float minX = -65f;
     private float maxX = 65f;
 
-    private bool canShootCannonball = true;
-    private float shootCannonballDelay = 0.1f;
+    private bool canMoveGuardian = false;
+    private bool canShootCannonball = false;
+    private float shootCannonballDelay = 1f;
 
     [Server]
     public override void StartGame()
@@ -42,7 +43,9 @@ public class GuardianMinigame : MiniGameBase
             yield return new WaitForSeconds(1f);
         }
         countdownText.text = "";
-        scoreText.text = "Score: " + score.ToString() + "/" + scoreToComplete.ToString();
+        scoreText.text = "Score: " + score.ToString() + "/" + targetScore.ToString();
+        canMoveGuardian = true;
+        canShootCannonball = true;
         StartEnemySpawns();
     }
 
@@ -53,6 +56,8 @@ public class GuardianMinigame : MiniGameBase
         base.EndGame();
         CancelInvoke(nameof(SpawnEnemy));
         ClearEnemies();
+        canMoveGuardian = false;
+        canShootCannonball = false;
     }
 
     [Server]
@@ -72,7 +77,7 @@ public class GuardianMinigame : MiniGameBase
                       $"Left={input.IsMovingLeft}, Right={input.IsMovingRight}, Interact={input.IsInteracting}");
 
             HandleMovement(player, input);
-            HandleInteraction(player, input);
+            HandleShooting(player, input);
         }
 
         UpdateEnemies();
@@ -133,23 +138,26 @@ public class GuardianMinigame : MiniGameBase
     [Server]
     private void HandleMovement(CustomGamePlayer player, PlayerInputData input)
     {
-        Debug.Log($"[GuardianMinigame] Handling movement for Player {player.netId}. " +
-                  $"Left={input.IsMovingLeft}, Right={input.IsMovingRight}");
+        if (canMoveGuardian)
+        {
+            Debug.Log($"[GuardianMinigame] Handling movement for Player {player.netId}. " +
+                    $"Left={input.IsMovingLeft}, Right={input.IsMovingRight}");
 
-        Vector3 position = guardian.rectTransform.localPosition;
-        if (input.IsMovingLeft) position.x -= guardianSpeed * Time.deltaTime;
-        if (input.IsMovingRight) position.x += guardianSpeed * Time.deltaTime;
+            Vector3 position = guardian.rectTransform.localPosition;
+            if (input.IsMovingLeft) position.x -= guardianSpeed * Time.deltaTime;
+            if (input.IsMovingRight) position.x += guardianSpeed * Time.deltaTime;
 
-        position.x = Mathf.Clamp(position.x, minX, maxX);
-        guardian.rectTransform.localPosition = position;
+            position.x = Mathf.Clamp(position.x, minX, maxX);
+            guardian.rectTransform.localPosition = position;
 
-        Debug.Log($"[GuardianMinigame] Player {player.netId} moved guardian to position {position}.");
+            Debug.Log($"[GuardianMinigame] Player {player.netId} moved guardian to position {position}.");
+        }
     }
 
     [Server]
-    private void HandleInteraction(CustomGamePlayer player, PlayerInputData input)
+    private void HandleShooting(CustomGamePlayer player, PlayerInputData input)
     {
-        if (input.IsInteracting && canShootCannonball)
+        if (input.IsJumping && canShootCannonball)
         {
             canShootCannonball = false;
             Debug.Log($"[GuardianMinigame] Handling interaction for Player {player.netId}. Interacting={input.IsInteracting}");
@@ -238,6 +246,6 @@ public class GuardianMinigame : MiniGameBase
     public void IncrementScore()
     {
         score++;
-        scoreText.text = "Score: " + score.ToString() + "/" + scoreToComplete.ToString();
+        scoreText.text = "Score: " + score.ToString() + "/" + targetScore.ToString();
     }
 }

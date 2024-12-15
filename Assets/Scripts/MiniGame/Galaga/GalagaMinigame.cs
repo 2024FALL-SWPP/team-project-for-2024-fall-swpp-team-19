@@ -16,14 +16,15 @@ public class GalagaMinigame : MiniGameBase
     private List<RawImage> enemies = new List<RawImage>();
 
     private int score = 0;
-    private int scoreToComplete = 3;
+    private int targetScore = 3;
 
     private float planeSpeed = 300f;
     private float minX = -65f;
     private float maxX = 65f;
 
-    private bool canShootBullet = true;
-    private float shootBulletDelay = 0.1f;
+    private bool canMovePlane = false;
+    private bool canShootBullet = false;
+    private float shootBulletDelay = 1f;
 
     [Server]
     public override void StartGame()
@@ -42,7 +43,9 @@ public class GalagaMinigame : MiniGameBase
             yield return new WaitForSeconds(1f);
         }
         countdownText.text = "";
-        scoreText.text = "Score: " + score.ToString() + "/" + scoreToComplete.ToString();
+        scoreText.text = "Score: " + score.ToString() + "/" + targetScore.ToString();
+        canMovePlane = true;
+        canShootBullet = true;
         StartEnemySpawns();
     }
 
@@ -72,7 +75,7 @@ public class GalagaMinigame : MiniGameBase
                       $"Left={input.IsMovingLeft}, Right={input.IsMovingRight}, Interact={input.IsInteracting}");
 
             HandleMovement(player, input);
-            HandleInteraction(player, input);
+            HandleShooting(player, input);
         }
 
         UpdateEnemies();
@@ -133,23 +136,26 @@ public class GalagaMinigame : MiniGameBase
     [Server]
     private void HandleMovement(CustomGamePlayer player, PlayerInputData input)
     {
-        Debug.Log($"[GalagaMinigame] Handling movement for Player {player.netId}. " +
-                  $"Left={input.IsMovingLeft}, Right={input.IsMovingRight}");
+        if (canMovePlane)
+        {
+            Debug.Log($"[GalagaMinigame] Handling movement for Player {player.netId}. " +
+                    $"Left={input.IsMovingLeft}, Right={input.IsMovingRight}");
 
-        Vector3 position = plane.rectTransform.localPosition;
-        if (input.IsMovingLeft) position.x -= planeSpeed * Time.deltaTime;
-        if (input.IsMovingRight) position.x += planeSpeed * Time.deltaTime;
+            Vector3 position = plane.rectTransform.localPosition;
+            if (input.IsMovingLeft) position.x -= planeSpeed * Time.deltaTime;
+            if (input.IsMovingRight) position.x += planeSpeed * Time.deltaTime;
 
-        position.x = Mathf.Clamp(position.x, minX, maxX);
-        plane.rectTransform.localPosition = position;
+            position.x = Mathf.Clamp(position.x, minX, maxX);
+            plane.rectTransform.localPosition = position;
 
-        Debug.Log($"[GalagaMinigame] Player {player.netId} moved plane to position {position}.");
+            Debug.Log($"[GalagaMinigame] Player {player.netId} moved plane to position {position}.");
+        }
     }
 
     [Server]
-    private void HandleInteraction(CustomGamePlayer player, PlayerInputData input)
+    private void HandleShooting(CustomGamePlayer player, PlayerInputData input)
     {
-        if (input.IsInteracting && canShootBullet)
+        if (input.IsJumping && canShootBullet)
         {
             canShootBullet = false;
             Debug.Log($"[GalagaMinigame] Handling interaction for Player {player.netId}. Interacting={input.IsInteracting}");
@@ -238,6 +244,6 @@ public class GalagaMinigame : MiniGameBase
     public void IncrementScore()
     {
         score++;
-        scoreText.text = "Score: " + score.ToString() + "/" + scoreToComplete.ToString();
+        scoreText.text = "Score: " + score.ToString() + "/" + targetScore.ToString();
     }
 }

@@ -11,6 +11,7 @@ public class PlayerInputData
     public bool IsMovingDown;
     public bool IsMovingLeft;
     public bool IsMovingRight;
+    public bool IsJumping;
     public bool IsInteracting;
     public bool IsInteractionReleased;
 }
