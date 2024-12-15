@@ -625,7 +625,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  speed: 200
+  speed: 50
   jumpForce: 8
   interactionRange: 300
 --- !u!114 &2825991980363391743
@@ -676,6 +676,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
+  isInMiniGame: 0
   InputData:
     MousePosition: {x: 0, y: 0}
     IsMouseClicked: 0
@@ -684,9 +685,9 @@ MonoBehaviour:
     IsMovingDown: 0
     IsMovingLeft: 0
     IsMovingRight: 0
+    IsJumping: 0
     IsInteracting: 0
     IsInteractionReleased: 0
-  isInMiniGame: 0
 --- !u!1 &5506513223644934172
 GameObject:
   m_ObjectHideFlags: 0

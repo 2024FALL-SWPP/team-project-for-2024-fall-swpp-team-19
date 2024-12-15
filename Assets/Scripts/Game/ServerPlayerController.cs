@@ -43,7 +43,6 @@ public class ServerPlayerController : NetworkBehaviour
             HandleInteraction();
         }
     }
-
     private void HandleMovement()
     {
         float moveHorizontal = Input.GetAxis("Horizontal");
@@ -51,9 +50,11 @@ public class ServerPlayerController : NetworkBehaviour
 
         Vector3 moveDirection = transform.right * moveHorizontal + transform.forward * moveVertical;
 
-        rb.MovePosition(transform.position + moveDirection.normalized * speed * Time.deltaTime);
+        Vector3 velocity = moveDirection.normalized * speed;
+        velocity.y = rb.velocity.y; 
+        rb.velocity = velocity;
     }
-
+    
     private void HandleJump()
     {
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
