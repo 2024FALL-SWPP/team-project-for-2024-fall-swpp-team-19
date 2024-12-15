@@ -252,6 +252,9 @@ MonoBehaviour:
   GameplayScene: Assets/Scenes/GameScene.unity
   _allPlayersReady: 0
   clientIndex: 0
+  spawnPositions:
+  - {x: 100, y: 100, z: 100}
+  - {x: 100, y: 10, z: 100}
 --- !u!114 &2055725981
 MonoBehaviour:
   m_ObjectHideFlags: 0
