@@ -13,7 +13,7 @@ public class StarHunterMinigame : MiniGameBase
 
     private Rigidbody2D duckRb;
     private float duckSpeed = 300f;
-    private float duckJumpForce = 1000f;
+    private float duckJumpForce = 1400f;
     private bool canMoveDuck = false;
     private int score = 0;
 
