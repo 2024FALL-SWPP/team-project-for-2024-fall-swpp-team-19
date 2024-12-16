@@ -64,6 +64,6 @@ public class TargetManager : NetworkBehaviour
     {
         // Load GameOver scene for all players
         UnityEngine.SceneManagement.SceneManager.LoadScene("GameOverScene");
-
+        Cursor.lockState = CursorLockMode.None;
     }
 }

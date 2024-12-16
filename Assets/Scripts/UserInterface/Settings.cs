@@ -18,6 +18,8 @@ public class Settings : MonoBehaviour
     public Slider brightnessSlider;
     public Slider sensitivitySlider;
 
+    public float mouseSensitivity = 100.0f;
+
  
 
     void Start()
@@ -62,8 +64,9 @@ public class Settings : MonoBehaviour
     private void UpdateSensitivity(float value)
     {
         // Save sensitivity value
-        PlayerPrefs.SetFloat("Sensitivity", value);
-        Debug.Log($"Sensitivity set to: {value}");
+        mouseSensitivity = value * 200.0f + 10.0f;
+        PlayerPrefs.SetFloat("Sensitivity", mouseSensitivity);
+        Debug.Log($"Sensitivity set to: {mouseSensitivity}");
     }
 
     private void OnDestroy()

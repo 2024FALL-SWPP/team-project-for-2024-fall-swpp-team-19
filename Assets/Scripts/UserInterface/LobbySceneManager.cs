@@ -2,10 +2,12 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Mirror;
+using System;
 
 public class LobbySceneManager : MonoBehaviour
 {
     private bool isReady = false;
+    ColorEnum[] colors = (ColorEnum[])Enum.GetValues(typeof(ColorEnum));
 
     public Toggle[] toggles;
     public GameObject[] characters;
@@ -23,13 +25,14 @@ public class LobbySceneManager : MonoBehaviour
 
     private int previousPlayerCount = -1;
     private string previousRoomCode = "";
+    
 
     void Start()
     {
         for (int i = 0; i < toggles.Length; i++)
         {
             int index = i;
-            toggles[i].onValueChanged.AddListener((bool isOn) => ToggleCharacter(toggles[index], characters[index]));
+            toggles[i].onValueChanged.AddListener((bool isOn) => ToggleCharacter(index));
             characters[i].SetActive(false);
         }
 
@@ -64,29 +67,57 @@ public class LobbySceneManager : MonoBehaviour
         }
     }
 
-    void ToggleCharacter(Toggle toggle, GameObject character)
-    {
-        if (toggle.isOn)
+    void ToggleCharacter(int index)
+    {   
+        ColorEnum currentColor = colors[index];
+        bool isColorRedundant = false;
+        CustomRoomManager customRoomManager = (CustomRoomManager)NetworkManager.singleton;
+        foreach (NetworkRoomPlayer roomPlayer in customRoomManager.roomSlots)
+         {
+             if (roomPlayer is CustomRoomPlayer customRoomPlayer) { 
+                    Debug.Log("CustomRoomPlayer color : " + customRoomPlayer.GetColor());
+                    Debug.Log("Current color : " + currentColor);
+                    if (customRoomPlayer.GetColor() == currentColor)
+                    {
+                        isColorRedundant = true;
+                        // break;
+                    }
+              } 
+         }
+        Debug.Log("roomSlot length : " + customRoomManager.roomSlots.Count);
+        if(isColorRedundant)
+        {
+            Debug.Log("Color is already taken");
+            // color check
+            toggles[index].isOn = false;
+            
+            return;            
+        }
+
+        CustomRoomPlayer localRoomPlayer = customRoomManager.GetLocalRoomPlayer();
+        Debug.Log($"Local player color, index: {localRoomPlayer.GetColor()}, {index}");
+        localRoomPlayer.SetColor(colors[index]);
+        if (toggles[index].isOn)
         {
             if (selectedCharacter != null)
                 selectedCharacter.SetActive(false);
 
             foreach (var otherToggle in toggles)
             {
-                if (otherToggle != toggle)
+                if (otherToggle != toggles[index])
                     otherToggle.isOn = false;
             }
 
-            selectedCharacter = character;
+            selectedCharacter = characters[index];
             selectedCharacter.SetActive(true);
             readyButton.interactable = true;
         }
-        else if (selectedCharacter == character)
+        else if (selectedCharacter == characters[index])
         {
             selectedCharacter = null;
             isReady = false;
             UpdateReadyButtonUI();
-            character.SetActive(false);
+            characters[index].SetActive(false);
             readyButton.interactable = false;
         }
     }
