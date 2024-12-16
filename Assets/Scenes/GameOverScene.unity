@@ -2361,6 +2361,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3574ea4df5a701b418a51db144a7aa8c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   go2TitleButton: {fileID: 1545958575}
   go2LobbyButton: {fileID: 1443418650}
   characters:

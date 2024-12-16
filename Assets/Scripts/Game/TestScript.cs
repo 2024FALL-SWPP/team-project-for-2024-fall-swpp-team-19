@@ -2,14 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using UnityEngine.UI;
 
 public class TestScript : NetworkBehaviour
 {
+    public ToggleManager toggleManager;
     // Start is called before the first frame update
     void Start()
     {   
- 
-        Invoke("DelayedMethod", 2f);
+        toggleManager.InitializeToggles();
+        // Invoke("DelayedMethod", 2f);
     }
 
     // Update is called once per frame

@@ -12,7 +12,7 @@ public class LobbySceneManager : MonoBehaviour
     public Toggle[] toggles;
     public GameObject[] characters;
     public Animator animator;
-
+    public Button exitButton;
     public Button readyButton;
     public TextMeshProUGUI readyButtonText;
     public Color readyColor = Color.green;
@@ -21,6 +21,8 @@ public class LobbySceneManager : MonoBehaviour
     public TextMeshProUGUI clipboardButtonText;
     public TextMeshProUGUI playerCountText;
 
+    public GameObject settingPanelPrefab; // 프리팹 참조
+    private GameObject settingPanelInstance; // 생성된 패널 인스턴스
     private GameObject selectedCharacter;
 
     private int previousPlayerCount = -1;
@@ -29,6 +31,7 @@ public class LobbySceneManager : MonoBehaviour
 
     void Start()
     {
+       
         for (int i = 0; i < toggles.Length; i++)
         {
             int index = i;
@@ -36,6 +39,7 @@ public class LobbySceneManager : MonoBehaviour
             characters[i].SetActive(false);
         }
 
+        exitButton.onClick.AddListener(Go2TitleButton);
         readyButton.onClick.AddListener(OnReady);
         readyButton.interactable = false;
 
@@ -64,6 +68,11 @@ public class LobbySceneManager : MonoBehaviour
                 UpdateClipboardButtonUI();
                 previousRoomCode = currentRoomCode;
             }
+        }
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            ToggleSettingPanel();
+            
         }
     }
 
@@ -193,4 +202,35 @@ public class LobbySceneManager : MonoBehaviour
             playerCountText.text = "Players: Error";
         }
     }
+
+    void Go2TitleButton(){
+        UnityEngine.SceneManagement.SceneManager.LoadScene("TitleScene");
+    }
+
+     private void ToggleSettingPanel()
+    {
+        if (settingPanelInstance == null)
+        {
+            // Find the Canvas in the scene
+            Canvas canvas = FindObjectOfType<Canvas>();
+            if (canvas != null)
+            {
+                // 세팅 패널이 없으면 프리팹에서 생성
+                settingPanelInstance = Instantiate(settingPanelPrefab);
+                settingPanelInstance.transform.SetParent(canvas.transform, false); // 부모를 Canvas로 설정
+                settingPanelInstance.SetActive(true);
+            }
+            else
+            {
+                Debug.LogError("Canvas not found in the scene.");
+            }
+        }
+        else
+        {
+            // 세팅 패널이 이미 생성된 경우 활성화/비활성화 토글
+            bool isActive = settingPanelInstance.activeSelf;
+            settingPanelInstance.SetActive(!isActive);
+        }
+    }
+
 }

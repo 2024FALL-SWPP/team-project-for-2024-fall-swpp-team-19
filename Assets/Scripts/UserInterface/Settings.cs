@@ -10,7 +10,7 @@ public class Settings : MonoBehaviour
    [Header("UI Sliders")]
 
     [Header("Post Processing")]
-    public Volume postProcessingVolume; // Post Processing Volume
+    private Volume postProcessingVolume; // Post Processing Volume
 
     private ColorAdjustments colorAdjustments;
    
@@ -19,11 +19,13 @@ public class Settings : MonoBehaviour
     public Slider sensitivitySlider;
 
     public float mouseSensitivity = 100.0f;
+    public float volume;
 
- 
+    public Button exitButton;
 
     void Start()
     {
+        postProcessingVolume = FindObjectOfType<Volume>();
 
          if (postProcessingVolume.profile.TryGet<ColorAdjustments>(out colorAdjustments))
         {
@@ -39,6 +41,7 @@ public class Settings : MonoBehaviour
         volumeSlider.onValueChanged.AddListener(UpdateVolume);
         brightnessSlider.onValueChanged.AddListener(UpdateBrightness);
         sensitivitySlider.onValueChanged.AddListener(UpdateSensitivity);
+        exitButton.onClick.AddListener(ExitButton);
     }
 
     private void UpdateVolume(float value)
@@ -56,6 +59,7 @@ public class Settings : MonoBehaviour
         {
             // Exposure 값 설정 (밝기 조정)
             colorAdjustments.postExposure.value = Mathf.Lerp(-2f, 2f, value); // -2에서 2 사이 값으로 조정
+            volume = colorAdjustments.postExposure.value;
         }
 
         Debug.Log($"Brightness set to: {value}");
@@ -85,4 +89,10 @@ public class Settings : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         gameObject.SetActive(false);
     }
+
+    private void ExitButton(){
+        UnityEngine.SceneManagement.SceneManager.LoadScene("TitleScene");
+    }
 }
+
+
