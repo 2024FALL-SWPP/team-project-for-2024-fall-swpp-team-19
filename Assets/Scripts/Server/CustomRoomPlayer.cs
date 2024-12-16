@@ -3,6 +3,11 @@ using UnityEngine;
 
 public class CustomRoomPlayer : NetworkRoomPlayer
 {
+    [SyncVar]
+    private ColorEnum color = ColorEnum.Undefined;
+    [SyncVar]
+    private bool isAlive = true;
+    
     public override void OnStartClient()
     {
         base.OnStartClient();
@@ -19,5 +24,23 @@ public class CustomRoomPlayer : NetworkRoomPlayer
     {
         base.OnClientExitRoom();
         Debug.Log($"Room Player {index} exited room.");
+    }
+
+    public ColorEnum GetColor(){
+        return color;
+    }
+
+    [Command]
+    public void SetColor(ColorEnum newColor){
+        color = newColor;
+    }
+
+    public bool GetIsAlive(){
+        return isAlive;
+    }
+
+    [Command]
+    public void SetIsAlive(bool newIsAlive){
+        isAlive = newIsAlive;
     }
 }

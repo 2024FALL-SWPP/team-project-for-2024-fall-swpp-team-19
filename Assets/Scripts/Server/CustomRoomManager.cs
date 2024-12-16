@@ -107,4 +107,26 @@ public class CustomRoomManager : NetworkRoomManager
         var transport = GetComponent<Mirror.TelepathyTransport>();
         return transport != null ? transport.port : 7777;
     }
+
+    public CustomRoomPlayer GetLocalRoomPlayer()
+    {
+        if (NetworkClient.localPlayer != null)
+        {
+            Debug.Log("Connection Verified");
+            CustomRoomManager customRoomManager = (CustomRoomManager)NetworkManager.singleton;
+            foreach (NetworkRoomPlayer roomPlayer in customRoomManager.roomSlots)
+            {
+                if (roomPlayer.connectionToClient == NetworkClient.localPlayer.connectionToClient) { 
+                    Debug.Log("Connection Verified");
+                  if (roomPlayer is CustomRoomPlayer customRoomPlayer)
+                    {
+                        Debug.Log("Room Player Verified");
+                        return customRoomPlayer;
+                    }
+                } 
+            }
+        }
+        Debug.Log("Connection Not Verified");
+        return null;
+    }
 }
