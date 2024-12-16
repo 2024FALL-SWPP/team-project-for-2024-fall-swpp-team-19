@@ -10,6 +10,7 @@ TagManager:
   - Enemy
   - StarHunterGround
   - StarHunterStar
+  - SceneManager
   layers:
   - Default
   - TransparentFX

@@ -15,7 +15,7 @@ public class GameCameraController : MonoBehaviour
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
-        
+
     }
 
     void Update()
@@ -23,15 +23,15 @@ public class GameCameraController : MonoBehaviour
         EnsureGamePlayer();
 
         if (gamePlayerTransform == null) return;
+        
         mouseSensitivity = PlayerPrefs.GetFloat("Sensitivity", 100.0f);
-       
         HandleMouseInput();
         UpdateCameraPositionAndRotation();
     }
 
     private void HandleMouseInput()
     {
-        Debug.Log("mouseSensitivity: " + mouseSensitivity);
+
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
