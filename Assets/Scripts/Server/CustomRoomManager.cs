@@ -38,44 +38,100 @@ public class CustomRoomManager : NetworkRoomManager
         Debug.Log("All players are ready. Transitioning to the game...");
     }
 
+
+    bool hasEntered;
+    
     public override void OnRoomServerSceneChanged(string sceneName)
     {
-        Debug.Log($"Scene changed to: {sceneName}");
-
-        // If this is the gameplay scene, handle player spawning ourselves
+        base.OnRoomServerSceneChanged(sceneName);
         if (sceneName == GameplayScene)
         {
-            // Prepare our spawn points
-            availableSpawns = new List<Vector3>(spawnPositions);
-
-            // Iterate over each connection and replace the RoomPlayer with a GamePlayer
-            foreach (var kvp in NetworkServer.connections)
+            if (!hasEntered)
             {
-                NetworkConnectionToClient conn = kvp.Value;
-                if (conn != null && conn.identity != null && conn.identity.GetComponent<NetworkRoomPlayer>() != null)
+                Debug.Log("Spawning players...");
+                hasEntered = true;
+
+                // Prepare our spawn points
+                availableSpawns = new List<Vector3>(spawnPositions);
+
+                // Iterate over each RoomPlayer in roomSlots
+                foreach (var roomPlayer in roomSlots)
                 {
-                    // Choose a random spawn point
-                    int randomIndex = Random.Range(0, availableSpawns.Count);
-                    Vector3 spawnPos = availableSpawns[randomIndex];
-                    availableSpawns.RemoveAt(randomIndex);
+                    if (roomPlayer != null && roomPlayer.connectionToClient != null)
+                    {
+                        // Ensure the room player is of type CustomRoomPlayer
+                        if (roomPlayer is CustomRoomPlayer customRoomPlayer)
+                        {
+                            // Get the player's selected color (or other property)
+                            ColorEnum colorEnum = customRoomPlayer.GetColor();
 
-                    // Instantiate the GamePlayer at the chosen spawn position
-                    GameObject playerInstance = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
+                            // Choose the prefab to spawn based on the colorEnum
+                            GameObject prefabToSpawn = GetPrefabForColor(colorEnum);
 
-                    // Replace the existing RoomPlayer for this connection with the newly spawned GamePlayer
-                    NetworkServer.ReplacePlayerForConnection(conn, playerInstance, true);
+                            if (prefabToSpawn == null)
+                            {
+                                Debug.LogError($"No prefab found for color: {colorEnum}");
+                                continue;
+                            }
 
-                    Debug.Log($"Spawned GamePlayer for Connection ID {conn.connectionId} at {spawnPos}");
+                            // Choose a random spawn point
+                            int randomIndex = Random.Range(0, availableSpawns.Count);
+                            Vector3 spawnPos = availableSpawns[randomIndex];
+                            availableSpawns.RemoveAt(randomIndex);
+
+                            // Instantiate the GamePlayer prefab at the chosen spawn position
+                            GameObject playerInstance = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);
+
+                            // Replace the existing RoomPlayer for this connection with the newly spawned GamePlayer
+                            NetworkServer.ReplacePlayerForConnection(roomPlayer.connectionToClient, playerInstance, true);
+
+                            Debug.Log($"Spawned GamePlayer for Connection ID {roomPlayer.connectionToClient.connectionId} at {spawnPos}");
+                        }
+                    }
                 }
             }
         }
         else
         {
-            // For non-gameplay scenes (like the room scene), call the base method
-            base.OnRoomServerSceneChanged(sceneName);
+            hasEntered = false;
         }
     }
 
+    [Header("Player Prefabs")]
+    public GameObject redPlayerPrefab;
+    public GameObject bluePlayerPrefab;
+    public GameObject greenPlayerPrefab;
+    public GameObject blackPlayerPrefab;
+    public GameObject yellowPlayerPrefab;
+    public GameObject pinkPlayerPrefab;
+    public GameObject whitePlayerPrefab;
+    public GameObject purplePlayerPrefab;
+
+    private GameObject GetPrefabForColor(ColorEnum colorEnum)
+    {
+        switch (colorEnum)
+        {
+            case ColorEnum.Red:
+                return redPlayerPrefab;
+            case ColorEnum.Blue:
+                return bluePlayerPrefab;
+            case ColorEnum.Green:
+                return greenPlayerPrefab;
+            case ColorEnum.Black:
+                return blackPlayerPrefab;
+            case ColorEnum.Yellow:
+                return yellowPlayerPrefab;
+            case ColorEnum.Pink:
+                return pinkPlayerPrefab;
+            case ColorEnum.White:
+                return whitePlayerPrefab;
+            case ColorEnum.Purple:
+                return purplePlayerPrefab;
+
+            default:
+                return null;
+        }
+    }
     public string GetRoomCode()
     {
         return roomCode;

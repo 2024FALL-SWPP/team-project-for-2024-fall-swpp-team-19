@@ -19,8 +19,8 @@ public class TestScript : NetworkBehaviour
     }
 
     void DelayedMethod(){
-         CustomRoomManager customRoomManager = (CustomRoomManager)NetworkManager.singleton;
+        CustomRoomManager customRoomManager = (CustomRoomManager)NetworkManager.singleton;
         Cursor.lockState = CursorLockMode.None;
-         customRoomManager.ServerChangeScene("LobbyScene");
+        customRoomManager.ServerChangeScene("GameOverScene");
     }
 }

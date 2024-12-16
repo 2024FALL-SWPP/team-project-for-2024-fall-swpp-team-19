@@ -42,26 +42,28 @@ public class GameOverManager : NetworkBehaviour
                     customRoomPlayer.SetColor(ColorEnum.Undefined);
               } 
          }
-        
+        Debug.Log("GameOverManager start "+NetworkManager.singleton);
     }
 
     // Update is called once per frame
     void Update()
     {
+        Debug.Log("GameOverManager start "+NetworkManager.singleton);
         
     }
 
 
     public void StayLobby()
     {
-        CustomRoomManager customRoomManager = (CustomRoomManager)NetworkManager.singleton;
-         customRoomManager.ServerChangeScene("LobbyScene");
+        CustomRoomManager customRoomManager=(CustomRoomManager)NetworkManager.singleton;
+        customRoomManager.ServerChangeScene("LobbyScene");
     }
 
     public void Go2Title()
     {
-        
-        UnityEngine.SceneManagement.SceneManager.LoadScene("TitleScene");
+        CustomRoomManager customRoomManager=(CustomRoomManager)NetworkManager.singleton;
+//        customRoomManager.ServerChangeScene("TitleScene");        
+        NetworkManager.singleton.StopHost();
     }
 
     void GetColor()
