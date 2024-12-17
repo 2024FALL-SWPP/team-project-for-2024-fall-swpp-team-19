@@ -104,6 +104,8 @@ public class CustomRoomManager : NetworkRoomManager
     public Vector3[] deviceLateSpawnPositions;
     public Vector3[] deviceLateSpawnRotations;
 
+    private GameObject[] spawnedDevices = new GameObject[16];
+    private GameObject[] lateSpawnedDevices = new GameObject[4];
 
     public override void OnRoomServerSceneChanged(string sceneName)
     {
@@ -113,17 +115,7 @@ public class CustomRoomManager : NetworkRoomManager
         // If this is the gameplay scene, handle player spawning ourselves
         if (sceneName == GameplayScene)
         {
-            // Prepare to spawn minigame devices
-            for (int i = 0; i < deviceSpawnPositions.Length; i++)
-            {
-                Vector3 position = deviceSpawnPositions[i];
-                Vector3 rotation = deviceSpawnRotations[i];
-
-                int randomIndex = Random.Range(0, 4);
-                GameObject minigameDevice = Instantiate(spawnPrefabs[randomIndex], position, Quaternion.Euler(rotation.x, rotation.y, rotation.z));
-                NetworkServer.Spawn(minigameDevice);
-            }
-
+            StartCoroutine(FirstSpawn());
             StartCoroutine(LateSpawn());
 
             // Call AssignTargetsInCircle to set player targets
@@ -132,19 +124,46 @@ public class CustomRoomManager : NetworkRoomManager
         }
     }
 
+    private IEnumerator FirstSpawn()
+    {
+        while (true)
+        {
+            // Prepare out spawn points of devices
+            for (int i = 0; i < deviceSpawnPositions.Length; i++)
+            {
+                if (spawnedDevices[i] == null)
+                {
+                    Vector3 position = deviceSpawnPositions[i];
+                    Vector3 rotation = deviceSpawnRotations[i];
+
+                    int randomIndex = Random.Range(0, 4);
+                    spawnedDevices[i] = Instantiate(spawnPrefabs[randomIndex], position, Quaternion.Euler(rotation.x, rotation.y, rotation.z));
+                    NetworkServer.Spawn(spawnedDevices[i]);
+                }
+            }
+            yield return new WaitForSeconds(60f);
+        }
+    }
+
     private IEnumerator LateSpawn()
     {
         yield return new WaitForSeconds(10f);
 
-        // Prepare out spawn points of devices
-        for (int i = 0; i < deviceLateSpawnPositions.Length; i++)
+        while (true)
         {
-            Vector3 position = deviceLateSpawnPositions[i];
-            Vector3 rotation = deviceLateSpawnRotations[i];
+            // Prepare out spawn points of devices
+            for (int i = 0; i < deviceLateSpawnPositions.Length; i++)
+            {
+                if (lateSpawnedDevices[i] == null)
+                {
+                    Vector3 position = deviceLateSpawnPositions[i];
+                    Vector3 rotation = deviceLateSpawnRotations[i];
 
-            int randomIndex = Random.Range(0, 4);
-            GameObject minigameDevice = Instantiate(spawnPrefabs[randomIndex], position, Quaternion.Euler(rotation.x, rotation.y, rotation.z));
-            NetworkServer.Spawn(minigameDevice);
+                    int randomIndex = Random.Range(0, 4);
+                    lateSpawnedDevices[i] = Instantiate(spawnPrefabs[randomIndex], position, Quaternion.Euler(rotation.x, rotation.y, rotation.z));
+                    NetworkServer.Spawn(lateSpawnedDevices[i]);
+                }
+            }
         }
     }
 
