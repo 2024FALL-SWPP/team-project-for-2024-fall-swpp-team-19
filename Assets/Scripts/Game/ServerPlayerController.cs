@@ -101,6 +101,8 @@ public class ServerPlayerController : NetworkBehaviour
         if (Input.GetKeyDown(KeyCode.Space) && IsGroundedWithGracePeriod())
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            GetComponent<MusicController>().PlayJumpSound();
+            isGrounded = false; // Prevent further jumps until grounded again
         }
     }
 
@@ -193,6 +195,7 @@ public class ServerPlayerController : NetworkBehaviour
                 RpcApplyPenalty();
             }
         }
+        GetComponent<MusicController>().PlayAttackSound();
     }
 
     [ClientRpc]
