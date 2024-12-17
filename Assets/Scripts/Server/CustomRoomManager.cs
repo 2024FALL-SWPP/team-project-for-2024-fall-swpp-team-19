@@ -126,43 +126,37 @@ public class CustomRoomManager : NetworkRoomManager
 
     private IEnumerator FirstSpawn()
     {
-        while (true)
+        // Prepare out spawn points of devices
+        for (int i = 0; i < deviceSpawnPositions.Length; i++)
         {
-            // Prepare out spawn points of devices
-            for (int i = 0; i < deviceSpawnPositions.Length; i++)
+            if (spawnedDevices[i] == null)
             {
-                if (spawnedDevices[i] == null)
-                {
-                    Vector3 position = deviceSpawnPositions[i];
-                    Vector3 rotation = deviceSpawnRotations[i];
+                Vector3 position = deviceSpawnPositions[i];
+                Vector3 rotation = deviceSpawnRotations[i];
 
-                    int randomIndex = Random.Range(0, 4);
-                    spawnedDevices[i] = Instantiate(spawnPrefabs[randomIndex], position, Quaternion.Euler(rotation.x, rotation.y, rotation.z));
-                    NetworkServer.Spawn(spawnedDevices[i]);
-                }
+                int randomIndex = Random.Range(0, 4);
+                spawnedDevices[i] = Instantiate(spawnPrefabs[randomIndex], position, Quaternion.Euler(rotation.x, rotation.y, rotation.z));
+                NetworkServer.Spawn(spawnedDevices[i]);
             }
-            yield return new WaitForSeconds(60f);
         }
+        yield return new WaitForSeconds(60f);
     }
 
     private IEnumerator LateSpawn()
     {
         yield return new WaitForSeconds(10f);
 
-        while (true)
+        // Prepare out spawn points of devices
+        for (int i = 0; i < deviceLateSpawnPositions.Length; i++)
         {
-            // Prepare out spawn points of devices
-            for (int i = 0; i < deviceLateSpawnPositions.Length; i++)
+            if (lateSpawnedDevices[i] == null)
             {
-                if (lateSpawnedDevices[i] == null)
-                {
-                    Vector3 position = deviceLateSpawnPositions[i];
-                    Vector3 rotation = deviceLateSpawnRotations[i];
+                Vector3 position = deviceLateSpawnPositions[i];
+                Vector3 rotation = deviceLateSpawnRotations[i];
 
-                    int randomIndex = Random.Range(0, 4);
-                    lateSpawnedDevices[i] = Instantiate(spawnPrefabs[randomIndex], position, Quaternion.Euler(rotation.x, rotation.y, rotation.z));
-                    NetworkServer.Spawn(lateSpawnedDevices[i]);
-                }
+                int randomIndex = Random.Range(0, 4);
+                lateSpawnedDevices[i] = Instantiate(spawnPrefabs[randomIndex], position, Quaternion.Euler(rotation.x, rotation.y, rotation.z));
+                NetworkServer.Spawn(lateSpawnedDevices[i]);
             }
         }
     }
