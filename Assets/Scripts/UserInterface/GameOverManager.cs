@@ -61,9 +61,7 @@ public class GameOverManager : NetworkBehaviour
 
     public void Go2Title()
     {
-        CustomRoomManager customRoomManager=(CustomRoomManager)NetworkManager.singleton;
-//        customRoomManager.ServerChangeScene("TitleScene");        
-        NetworkManager.singleton.StopHost();
+        CustomRoomManager.Instance.ReturnToTitle();
     }
 
     void GetColor()
