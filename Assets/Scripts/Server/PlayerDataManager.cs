@@ -32,6 +32,16 @@ public class PlayerDataManager : NetworkBehaviour
         }
     }
 
+    public PlayerData GetPlayerData(ColorEnum color)
+    {
+        if (playerDataMap.ContainsKey(color))
+        {
+            return playerDataMap[color];
+        }
+        return null;
+    }
+
+
     [Command]
     public void CmdUpdatePlayerData(ColorEnum color, string field, object value)
     {
@@ -49,6 +59,54 @@ public class PlayerDataManager : NetworkBehaviour
     {
         playerDataMap.Clear();
         Debug.Log("Cleared all PlayerData.");
+    }
+
+    [Server]
+    public void AssignTargetsInCircle()
+    {
+        if (playerDataMap.Count < 2)
+        {
+            Debug.LogWarning("Not enough players to form a circle.");
+            return;
+        }
+
+        // Extract all player colors into a list
+        List<ColorEnum> playerColors = new List<ColorEnum>(playerDataMap.Keys);
+
+        // Assign targets in a circular fashion
+        for (int i = 0; i < playerColors.Count; i++)
+        {
+            ColorEnum currentPlayer = playerColors[i];
+            ColorEnum nextPlayer = playerColors[(i + 1) % playerColors.Count]; // Wrap around for the last player
+
+            var data = playerDataMap[currentPlayer];
+            data.target = nextPlayer; // Update the target field
+            playerDataMap[currentPlayer] = data;
+        }
+
+        // Print the circle for debugging
+        Debug.Log("=== Target Circle Assignment ===");
+        foreach (var player in playerDataMap)
+        {
+            Debug.Log($"Player {player.Key} -> Targets: {player.Value.target}");
+        }
+    }
+    
+    [Server]
+    public int CountAlivePlayers()
+    {
+        int aliveCount = 0;
+
+        foreach (var playerData in playerDataMap.Values)
+        {
+            if (playerData.isAlive) // Assuming PlayerData has an 'isAlive' property
+            {
+                aliveCount++;
+            }
+        }
+
+        Debug.Log($"Number of alive players: {aliveCount}");
+        return aliveCount;
     }
 
 }

@@ -15,15 +15,17 @@ public class GameCameraController : MonoBehaviour
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
-
     }
 
     void Update()
     {
         EnsureGamePlayer();
 
-        if (gamePlayerTransform == null) return;
-        
+        if (gamePlayerTransform == null)
+        {
+            return;
+        }
+
         mouseSensitivity = PlayerPrefs.GetFloat("Sensitivity", 100.0f);
         HandleMouseInput();
         UpdateCameraPositionAndRotation();
@@ -31,7 +33,6 @@ public class GameCameraController : MonoBehaviour
 
     private void HandleMouseInput()
     {
-
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
@@ -44,7 +45,8 @@ public class GameCameraController : MonoBehaviour
 
     private void UpdateCameraPositionAndRotation()
     {
-        transform.position = gamePlayerTransform.position + gamePlayerTransform.TransformDirection(cameraOffset);
+        Vector3 targetPosition = gamePlayerTransform.position + gamePlayerTransform.TransformDirection(cameraOffset);
+        transform.position = targetPosition;
         transform.rotation = gamePlayerTransform.rotation * Quaternion.Euler(xRotation, 0f, 0f);
     }
 
@@ -54,16 +56,21 @@ public class GameCameraController : MonoBehaviour
 
         if (roomManager == null)
         {
-            Debug.LogError("EnsureGamePlayer: NetworkManager is not a NetworkRoomManager.");
             return;
         }
 
         string activeSceneName = SceneManager.GetActiveScene().name;
         string gameplaySceneName = System.IO.Path.GetFileNameWithoutExtension(roomManager.GameplayScene);
 
-        if (activeSceneName != gameplaySceneName) return;
+        if (activeSceneName != gameplaySceneName)
+        {
+            return;
+        }
 
-        if (NetworkClient.localPlayer == null) return;
+        if (NetworkClient.localPlayer == null)
+        {
+            return;
+        }
 
         if (gamePlayerTransform != NetworkClient.localPlayer.transform)
         {

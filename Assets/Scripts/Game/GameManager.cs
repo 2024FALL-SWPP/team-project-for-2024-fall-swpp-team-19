@@ -7,8 +7,9 @@ public class GameManager : MonoBehaviour
 
     public GameObject settingPanelPrefab; // 프리팹 참조
     private GameObject settingPanelInstance; // 생성된 패널 인스턴스
-
+    private bool gameFinished = false;  
     void Start(){
+        gameFinished = false;
         Debug.Log("GameManager Start");
     }
     void Update(){
@@ -21,7 +22,26 @@ public class GameManager : MonoBehaviour
         {
             ToggleSettingPanel();
         }
+
+
+        if (PlayerDataManager.Instance.CountAlivePlayers() == 1)
+        {
+            if(gameFinished == false){
+                gameFinished = true;            
+                Invoke("DelayedMethod", 2f);
+                Debug.Log("Game Finished");
+            }
+        }
+            
+
     }
+
+    void DelayedMethod(){
+        Debug.Log("DelayedMethod");
+        Cursor.lockState = CursorLockMode.None;
+        CustomRoomManager.Instance.ServerChangeScene("GameOverScene");
+    }
+
     private void ToggleSettingPanel()
     {
         if (settingPanelInstance == null)
