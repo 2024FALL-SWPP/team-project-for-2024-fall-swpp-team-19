@@ -7,9 +7,14 @@ public class ServerPlayerController : NetworkBehaviour
     public float speed = 30.0f;
     public float jumpForce = 15.0f;
     private Rigidbody rb;
-    private bool isGrounded;
+    public bool isGrounded;
     private bool isInteracting = false;
     private Animator animator;
+
+    public LayerMask groundLayer = ~0;
+    public float groundCheckDistance = 1.0f; // Distance for raycast to check ground
+    private float lastGroundedTime;
+    private float groundGracePeriod = 0.2f; // Grace period after landing
 
     public float interactionRange = 15.0f;
     private CustomGamePlayer customPlayer;
@@ -46,9 +51,11 @@ public class ServerPlayerController : NetworkBehaviour
             HandleInteraction();
         }
     }
+
     private void HandleMovement()
     {
         if (isInteracting) return;
+
         float moveHorizontal = Input.GetAxis("Horizontal");
         float moveVertical = Input.GetAxis("Vertical");
 
@@ -57,7 +64,7 @@ public class ServerPlayerController : NetworkBehaviour
         Vector3 velocity = moveDirection.normalized * speed;
         rb.velocity = new Vector3(velocity.x, rb.velocity.y, velocity.z);
 
-    bool isMoving = moveDirection.magnitude > 0.1f;
+        bool isMoving = moveDirection.magnitude > 0.1f;
 
         // Update animation only when the state changes
         if (animator.GetBool("IsRunning") != isMoving)
@@ -65,20 +72,13 @@ public class ServerPlayerController : NetworkBehaviour
             animator.SetBool("IsRunning", isMoving);
         }
     }
-    
-    private void CheckGrounded()
-    {
-        // Cast a ray slightly below the character to check if near the ground
-        float rayLength = 1.2f; // Adjust based on the character's size
-        isGrounded = Physics.Raycast(transform.position, Vector3.down, rayLength);
-    }
 
     private void HandleJump()
     {
-        if (Input.GetKeyDown(KeyCode.Space)&& isGrounded)
+        if (Input.GetKeyDown(KeyCode.Space) && IsGroundedWithGracePeriod())
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-            isGrounded = false;
+            isGrounded = false; // Prevent further jumps until grounded again
         }
     }
 
@@ -115,6 +115,37 @@ public class ServerPlayerController : NetworkBehaviour
     {
         yield return new WaitForSeconds(delay);
         isInteracting = false;
+    }
+
+    private void CheckGrounded()
+    {
+        // Cast a ray downward to check if the player is near the ground
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, Vector3.down, out hit, groundCheckDistance, groundLayer))
+        {
+            isGrounded = true;
+            lastGroundedTime = Time.time; // Update the last grounded time
+        }
+        else
+        {
+            isGrounded = false;
+        }
+    }
+
+    private bool IsGroundedWithGracePeriod()
+    {
+        // Allow jumping if grounded or within the grace period after landing
+        return isGrounded || (Time.time - lastGroundedTime) <= groundGracePeriod;
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        // Additional collision check to reinforce grounded state
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
+        {
+            isGrounded = true;
+            lastGroundedTime = Time.time; // Update the last grounded time
+        }
     }
 
     [Command]
