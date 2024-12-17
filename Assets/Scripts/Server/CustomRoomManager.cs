@@ -1,16 +1,63 @@
 using UnityEngine;
 using Mirror;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class CustomRoomManager : NetworkRoomManager
 {
-    private string roomCode;
+    
+    
+    
+    public static CustomRoomManager Instance => (CustomRoomManager)NetworkManager.singleton;
 
-    [Header("Game Player Spawn Settings")]
-    [Tooltip("Positions in the Game scene where players can spawn.")]
-    public Vector3[] spawnPositions;
-    private List<Vector3> availableSpawns;
+    [Header("Title Scene")]
+    [Tooltip("The name of the Title Scene to return to.")]
+    public string titleSceneName = "TitleScene"; 
 
+
+  /// <summary>
+    /// Clean up host and client data and return to the Title Scene.
+    /// </summary>
+    public void ReturnToTitle()
+    {
+        Debug.Log("Cleaning up network state and returning to Title Scene...");
+
+        // Stop host if active
+        if (NetworkServer.active && NetworkClient.isConnected)
+        {
+            Debug.Log("Stopping Host...");
+            StopHost();
+        }
+        // Stop client if connected
+        else if (NetworkClient.isConnected)
+        {
+            Debug.Log("Stopping Client...");
+            StopClient();
+        }
+        // Stop server if only the server is active
+        else if (NetworkServer.active)
+        {
+            Debug.Log("Stopping Server...");
+            StopServer();
+        }
+
+        // Clear pending network states
+        NetworkClient.Shutdown();
+        NetworkServer.Shutdown();
+
+        // Return to Title Scene
+        Debug.Log($"Loading Title Scene: {titleSceneName}");
+        SceneManager.LoadScene(titleSceneName);
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+        private string roomCode;
     public override void OnStartHost()
     {
         base.OnStartHost();
@@ -39,61 +86,43 @@ public class CustomRoomManager : NetworkRoomManager
     }
 
 
-    bool hasEntered;
-    
+    [Header("Game Player Spawn Settings")]
+    [Tooltip("Positions in the Game scene where players can spawn.")]
+    public Vector3[] spawnPositions;
+    private List<Vector3> availableSpawns;   
+
+
     public override void OnRoomServerSceneChanged(string sceneName)
     {
         base.OnRoomServerSceneChanged(sceneName);
+        Debug.Log($"Scene changed to: {sceneName}");
+        // If this is the gameplay scene, handle player spawning ourselves
         if (sceneName == GameplayScene)
         {
-            if (!hasEntered)
+            // Prepare our spawn points
+            availableSpawns = new List<Vector3>(spawnPositions);
+            // Iterate over each connection and replace the RoomPlayer with a GamePlayer
+            foreach (var kvp in NetworkServer.connections)
             {
-                Debug.Log("Spawning players...");
-                hasEntered = true;
-
-                // Prepare our spawn points
-                availableSpawns = new List<Vector3>(spawnPositions);
-
-                // Iterate over each RoomPlayer in roomSlots
-                foreach (var roomPlayer in roomSlots)
+                NetworkConnectionToClient conn = kvp.Value;
+                if (conn != null && conn.identity != null && conn.identity.GetComponent<NetworkRoomPlayer>() != null)
                 {
-                    if (roomPlayer != null && roomPlayer.connectionToClient != null)
-                    {
-                        // Ensure the room player is of type CustomRoomPlayer
-                        if (roomPlayer is CustomRoomPlayer customRoomPlayer)
-                        {
-                            // Get the player's selected color (or other property)
-                            ColorEnum colorEnum = customRoomPlayer.GetColor();
-
-                            // Choose the prefab to spawn based on the colorEnum
-                            GameObject prefabToSpawn = GetPrefabForColor(colorEnum);
-
-                            if (prefabToSpawn == null)
-                            {
-                                Debug.LogError($"No prefab found for color: {colorEnum}");
-                                continue;
-                            }
-
-                            // Choose a random spawn point
-                            int randomIndex = Random.Range(0, availableSpawns.Count);
-                            Vector3 spawnPos = availableSpawns[randomIndex];
-                            availableSpawns.RemoveAt(randomIndex);
-
-                            // Instantiate the GamePlayer prefab at the chosen spawn position
-                            GameObject playerInstance = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);
-
-                            // Replace the existing RoomPlayer for this connection with the newly spawned GamePlayer
-                            NetworkServer.ReplacePlayerForConnection(roomPlayer.connectionToClient, playerInstance, true);
-
-                            Debug.Log($"Spawned GamePlayer for Connection ID {roomPlayer.connectionToClient.connectionId} at {spawnPos}");
-                        }
-                    }
+                    // Choose a random spawn point
+                    int randomIndex = Random.Range(0, availableSpawns.Count);
+                    Vector3 spawnPos = availableSpawns[randomIndex];
+                    availableSpawns.RemoveAt(randomIndex);
+                    // Instantiate the GamePlayer at the chosen spawn position
+                    GameObject playerInstance = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
+                    // Replace the existing RoomPlayer for this connection with the newly spawned GamePlayer
+                    NetworkServer.ReplacePlayerForConnection(conn, playerInstance, true);
+                    Debug.Log($"Spawned GamePlayer for Connection ID {conn.connectionId} at {spawnPos}");
                 }
             }
         }
         else
         {
-            hasEntered = false;
+            // For non-gameplay scenes (like the room scene), call the base method
+            base.OnRoomServerSceneChanged(sceneName);
         }
     }
 
