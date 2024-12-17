@@ -8,6 +8,9 @@ public class PlayerCombat : NetworkBehaviour
     [SerializeField] private LayerMask playerLayer;
     [SerializeField] private Animator animator;
 
+    [SerializeField] private CoolDownUI cooldownUI; // Reference to CooldownUI script
+    [SerializeField] private float attackCooldownTime = 30.0f; // Cooldown duration
+
     private GameObject target;
     private bool isPenalized = false;
 
@@ -53,12 +56,13 @@ public class PlayerCombat : NetworkBehaviour
     void RpcApplyPenalty()
     {
         StartCoroutine(ApplyPenalty());
+        cooldownUI?.StartCooldown(attackCooldownTime);
     }
 
     private IEnumerator ApplyPenalty()
     {
         isPenalized = true;
-        yield return new WaitForSeconds(60f); // 1-minute penalty
+        yield return new WaitForSeconds(30f); // 30 seconds penalty
         isPenalized = false;
     }
 }
