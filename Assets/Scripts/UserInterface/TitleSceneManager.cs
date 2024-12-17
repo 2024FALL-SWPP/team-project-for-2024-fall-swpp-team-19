@@ -130,6 +130,7 @@ public class TitleSceneManager : MonoBehaviour
                     isConnecting = true;
 
                     Debug.Log("Attempting to connect to localhost...");
+                    LoadLobbyScene();
                     return;
                 }
 

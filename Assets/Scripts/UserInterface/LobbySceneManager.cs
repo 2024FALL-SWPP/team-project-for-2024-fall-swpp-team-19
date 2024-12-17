@@ -31,7 +31,7 @@ public class LobbySceneManager : MonoBehaviour
 
     void Start()
     {
-       
+        Debug.Log("LobbySceneManager Start");
         for (int i = 0; i < toggles.Length; i++)
         {
             int index = i;

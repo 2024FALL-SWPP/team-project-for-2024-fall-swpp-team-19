@@ -8,6 +8,9 @@ public class GameManager : MonoBehaviour
     public GameObject settingPanelPrefab; // 프리팹 참조
     private GameObject settingPanelInstance; // 생성된 패널 인스턴스
 
+    void Start(){
+        Debug.Log("GameManager Start");
+    }
     void Update(){
         if(settingPanelInstance != null){
             if(settingPanelInstance.activeSelf == false){
