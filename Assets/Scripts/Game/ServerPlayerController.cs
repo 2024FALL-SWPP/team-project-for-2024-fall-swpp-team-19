@@ -14,7 +14,11 @@ public class ServerPlayerController : NetworkBehaviour
 
     private void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        rb = GetComponentInChildren<Rigidbody>();
+        if (rb == null)
+        {
+            Debug.LogError($"[ServerPlayerController] Rigidbody not found in {gameObject.name} or its children.");
+        }
         animator = GetComponent<Animator>();
         customPlayer = GetComponent<CustomGamePlayer>();
 
@@ -22,7 +26,7 @@ public class ServerPlayerController : NetworkBehaviour
         {
             enabled = false;
         }
-    }
+    }   
 
     private void Update()
     {

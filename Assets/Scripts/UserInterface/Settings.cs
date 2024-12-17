@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.Audio;
 public class Settings : MonoBehaviour
 {
    [Header("UI Sliders")]
@@ -13,6 +14,8 @@ public class Settings : MonoBehaviour
     private Volume postProcessingVolume; // Post Processing Volume
 
     private ColorAdjustments colorAdjustments;
+    [Header("Audio")]
+    public AudioMixer audioMixer;
    
     public Slider volumeSlider;
     public Slider brightnessSlider;
@@ -37,6 +40,8 @@ public class Settings : MonoBehaviour
         brightnessSlider.value = PlayerPrefs.GetFloat("Brightness", 0.5f);
         sensitivitySlider.value = PlayerPrefs.GetFloat("Sensitivity", 0.5f);
 
+        UpdateVolume(volumeSlider.value);
+
         // Add listeners
         volumeSlider.onValueChanged.AddListener(UpdateVolume);
         brightnessSlider.onValueChanged.AddListener(UpdateBrightness);
@@ -46,6 +51,10 @@ public class Settings : MonoBehaviour
 
     private void UpdateVolume(float value)
     {
+        // Set volume in the audio mixer
+        float volumeInDb = Mathf.Log10(Mathf.Clamp(value, 0.0001f, 1f)) * 20;
+        audioMixer.SetFloat("Master", volumeInDb);
+
         // Save volume value
         PlayerPrefs.SetFloat("Volume", value);
         Debug.Log($"Volume set to: {value}");
