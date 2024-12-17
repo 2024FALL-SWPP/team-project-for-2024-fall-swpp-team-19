@@ -23,6 +23,7 @@ public class ServerPlayerController : NetworkBehaviour
     [SerializeField] private float attackRange = 200.0f;
     [SerializeField] public LayerMask playerLayer;
     [SyncVar] private bool isPenalized = false;
+    private bool canAttack = true;
 
     // Health-related variables
     [SyncVar] public bool isDead = false;
@@ -69,7 +70,7 @@ public class ServerPlayerController : NetworkBehaviour
             HandleInteraction();
         }
 
-        if (Input.GetKeyDown(KeyCode.R))
+        if (Input.GetKeyDown(KeyCode.R) && canAttack)
         {
             HandleAttack();
             CmdAttemptKill();
@@ -90,10 +91,7 @@ public class ServerPlayerController : NetworkBehaviour
 
         bool isMoving = moveDirection.magnitude > 0.1f;
 
-        if (animator.GetBool("IsRunning") != isMoving)
-        {
-            animator.SetBool("IsRunning", isMoving);
-        }
+        CmdTriggerRunningAnimation(isMoving);
     }
 
     private void HandleJump()
@@ -108,7 +106,16 @@ public class ServerPlayerController : NetworkBehaviour
     //Attack Logic
     private void HandleAttack()
     {
-        animator.SetTrigger("Interaction");
+        canAttack = false;
+        CmdTriggerAttackAnimation();
+
+        StartCoroutine(AttackCooldown(3.0f));
+    }
+
+    private IEnumerator AttackCooldown(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        canAttack = true;
     }
 
     // Interaction logic
@@ -145,7 +152,7 @@ public class ServerPlayerController : NetworkBehaviour
         isInteracting = false;
     }
 
-        [Command]
+    [Command]
     void CmdAttemptKill()
     {
         // Verify the caller's identity using connectionToClient
@@ -222,7 +229,7 @@ public class ServerPlayerController : NetworkBehaviour
 
         if (animator != null)
         {
-            animator.SetTrigger("Die");
+            CmdTriggerDyingAnimation();
         }
 
         StartCoroutine(HandleDeath());
@@ -233,24 +240,6 @@ public class ServerPlayerController : NetworkBehaviour
         yield return new WaitForSeconds(2.0f);
 
         gameObject.SetActive(false);
-
-        // if (isLocalPlayer)
-        // {
-        //     if (playerCamera != null)
-        //     {
-        //         playerCamera.enabled = false;
-        //     }
-
-        //     if (spectatorCamera != null)
-        //     {
-        //         spectatorCamera.enabled = true;
-        //     }
-        // }
-
-        // if (isServer)
-        // {
-        //     FindObjectOfType<TargetManager>().CheckRemainingPlayers();
-        // }
     }
 
     // Ground detection
@@ -295,6 +284,52 @@ public class ServerPlayerController : NetworkBehaviour
         else
         {
             Debug.Log($"[ServerPlayerController] No valid RegisterableDevice found for Player {netId}.");
+        }
+    }
+
+    //Server Animation
+    [Command]
+    void CmdTriggerAttackAnimation()
+    {
+        RpcPlayAttackAnimation();
+    }
+
+    [ClientRpc]
+    void RpcPlayAttackAnimation()
+    {
+        if (animator != null)
+        {
+            animator.SetTrigger("Interaction");
+        }
+    }
+
+    [Command]
+    void CmdTriggerDyingAnimation()
+    {
+        RpcPlayDyingAnimation();
+    }
+
+    [ClientRpc]
+    void RpcPlayDyingAnimation()
+    {
+        if (animator != null)
+        {
+            animator.SetTrigger("Die");
+        }
+    }
+
+    [Command]
+    void CmdTriggerRunningAnimation(bool isMoving)
+    {
+        RpcPlayRunningAnimation(isMoving);
+    }
+
+    [ClientRpc]
+    void RpcPlayRunningAnimation(bool isMoving)
+    {
+        if (animator != null)
+        {
+            animator.SetBool("IsRunning", isMoving);
         }
     }
 }
