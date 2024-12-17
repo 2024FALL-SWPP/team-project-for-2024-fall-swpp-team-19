@@ -102,7 +102,6 @@ public class ServerPlayerController : NetworkBehaviour
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             GetComponent<MusicController>().PlayJumpSound();
-            isGrounded = false; // Prevent further jumps until grounded again
         }
     }
 
