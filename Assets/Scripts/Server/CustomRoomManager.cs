@@ -1,10 +1,41 @@
 using UnityEngine;
 using Mirror;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class CustomRoomManager : NetworkRoomManager
 {
+    
+    public static CustomRoomManager Instance => (CustomRoomManager)NetworkManager.singleton;
+
     private string roomCode;
+    public string GetRoomCode()
+    {
+        return roomCode;
+    }
+
+    public void SetRoomCode(string code)
+    {
+        roomCode = code;
+        Debug.Log($"Room Code manually set to: {roomCode}");
+    }
+ 
+    private string GenerateRoomCode()
+    {
+        string externalIP = ExternalIPHelper.GetExternalIPAddress();
+        int port = GetServerPort();
+
+        if (externalIP == "Unknown")
+        {
+            Debug.LogError("Unable to generate room code: External IP not found.");
+            return "Error: No IP";
+        }
+
+        string rawData = $"{externalIP}:{port}";
+        return System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(rawData));
+    }
+
+
 
     [Header("Game Player Spawn Settings")]
     [Tooltip("Positions in the Game scene where players can spawn.")]
@@ -132,31 +163,6 @@ public class CustomRoomManager : NetworkRoomManager
                 return null;
         }
     }
-    public string GetRoomCode()
-    {
-        return roomCode;
-    }
-
-    public void SetRoomCode(string code)
-    {
-        roomCode = code;
-        Debug.Log($"Room Code manually set to: {roomCode}");
-    }
-
-    private string GenerateRoomCode()
-    {
-        string externalIP = ExternalIPHelper.GetExternalIPAddress();
-        int port = GetServerPort();
-
-        if (externalIP == "Unknown")
-        {
-            Debug.LogError("Unable to generate room code: External IP not found.");
-            return "Error: No IP";
-        }
-
-        string rawData = $"{externalIP}:{port}";
-        return System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(rawData));
-    }
 
     private int GetServerPort()
     {
@@ -185,4 +191,27 @@ public class CustomRoomManager : NetworkRoomManager
         Debug.Log("Connection Not Verified");
         return null;
     }
+
+     [Header("Title Scene")]
+    [Tooltip("The name of the Title Scene to return to.")]
+    public string titleSceneName = "TitleScene";
+
+
+    public void ReturnToTitle()
+    {
+        Debug.Log("Cleaning up network state and returning to Title Scene...");
+            if (NetworkServer.active || NetworkClient.isConnected)
+            {
+                Debug.Log("Disconnecting network connections...");
+                NetworkClient.Disconnect();
+                NetworkServer.DisconnectAll();
+            }
+            // Shutdown networking without destroying the manager
+            NetworkClient.Shutdown();
+            NetworkServer.Shutdown();
+            // Load Title Scene
+            SceneManager.LoadScene(titleSceneName);
+    }
+
+    
 }

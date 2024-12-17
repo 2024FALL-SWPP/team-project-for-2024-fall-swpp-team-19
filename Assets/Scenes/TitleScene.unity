@@ -1902,7 +1902,6 @@ GameObject:
   - component: {fileID: 844381985}
   - component: {fileID: 844381984}
   - component: {fileID: 844381986}
-  - component: {fileID: 844381987}
   m_Layer: 0
   m_Name: TitleSceneManager
   m_TagString: Untagged
@@ -1974,19 +1973,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &844381987
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 844381983}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b8592b65f83e55242ad4a3a2f8b757bd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  postProcessingVolume: {fileID: 461927822262745151, guid: 6ccd5ddece5fb1447be0f881f455b43f, type: 3}
 --- !u!1 &853227476
 GameObject:
   m_ObjectHideFlags: 0

@@ -18,7 +18,6 @@ public class TitleSceneManager : MonoBehaviour
     public GameObject backGround;
     public GameObject undoButton;
 
-    private NetworkManager networkManager;
     private TMP_InputField inputField;
 
     private bool isConnecting = false;
@@ -30,7 +29,6 @@ public class TitleSceneManager : MonoBehaviour
         StartCoroutine(ChangeTitleColor());
         gameButtonGroup.SetActive(false);
         hostInputField.SetActive(false);
-        networkManager = NetworkManager.singleton;
 
         inputField = hostInputField.GetComponent<TMP_InputField>();
         if (inputField != null)
@@ -68,16 +66,7 @@ public class TitleSceneManager : MonoBehaviour
 
     public void CreateLobbyButton()
     {
-        if (networkManager != null)
-        {
-            networkManager.StartHost();
-
-            Debug.Log("Host started. NetworkRoomManager will handle scene transition.");
-        }
-        else
-        {
-            Debug.LogError("NetworkManager is not found.");
-        }
+        CustomRoomManager.Instance.StartHost();
     }
 
     public void JoinButton()
@@ -102,25 +91,20 @@ public class TitleSceneManager : MonoBehaviour
 
     public void ConnectToServer()
     {
-        if (networkManager != null && !isConnecting)
+        if (!isConnecting)
         {
             if (!string.IsNullOrEmpty(inputField.text))
             {
                 string roomCode = inputField.text;
-
-                var customRoomManager = networkManager as CustomRoomManager;
-                if (customRoomManager != null)
-                {
-                    customRoomManager.SetRoomCode(roomCode);
-                }
+                CustomRoomManager.Instance.SetRoomCode(roomCode);
 
                 if (roomCode.ToLower() == "localhost")
                 {
                     Debug.Log("Connecting to localhost...");
-                    networkManager.networkAddress = "127.0.0.1";
+                    CustomRoomManager.Instance.networkAddress = "127.0.0.1";
+                    CustomRoomManager.Instance.StartClient();
                     isConnecting = true;
 
-                    networkManager.StartClient();
                     Debug.Log("Attempting to connect to localhost...");
                     return;
                 }
@@ -138,9 +122,9 @@ public class TitleSceneManager : MonoBehaviour
                         {
                             Debug.Log($"Attempting to connect to IP: {ipAddress}, Port: {port}");
 
-                            networkManager.networkAddress = ipAddress;
+                            CustomRoomManager.Instance.networkAddress = ipAddress;
 
-                            var transport = networkManager.GetComponent<Mirror.TelepathyTransport>();
+                            var transport = CustomRoomManager.Instance.GetComponent<Mirror.TelepathyTransport>();
                             if (transport != null)
                             {
                                 transport.port = (ushort)port;
@@ -148,7 +132,7 @@ public class TitleSceneManager : MonoBehaviour
 
                             isConnecting = true;
 
-                            networkManager.StartClient();
+                            CustomRoomManager.Instance.StartClient();
                             Debug.Log("Checking room existence...");
                         }
                         else

@@ -21,8 +21,7 @@ public class GameOverManager : NetworkBehaviour
         {
             characters[i].SetActive(false);
         }
-        CustomRoomManager customRoomManager = (CustomRoomManager)NetworkManager.singleton;
-        foreach (NetworkRoomPlayer roomPlayer in customRoomManager.roomSlots)
+        foreach (NetworkRoomPlayer roomPlayer in CustomRoomManager.Instance.roomSlots)
          {
              if (roomPlayer is CustomRoomPlayer customRoomPlayer) { 
                     if(customRoomPlayer.GetIsAlive())
@@ -35,7 +34,7 @@ public class GameOverManager : NetworkBehaviour
          }
         characters[(int)color].SetActive(true);
 
-        foreach (NetworkRoomPlayer roomPlayer in customRoomManager.roomSlots)
+        foreach (NetworkRoomPlayer roomPlayer in CustomRoomManager.Instance.roomSlots)
          {
              if (roomPlayer is CustomRoomPlayer customRoomPlayer) { 
                     customRoomPlayer.SetIsAlive(true);
@@ -55,15 +54,12 @@ public class GameOverManager : NetworkBehaviour
 
     public void StayLobby()
     {
-        CustomRoomManager customRoomManager=(CustomRoomManager)NetworkManager.singleton;
-        customRoomManager.ServerChangeScene("LobbyScene");
+        CustomRoomManager.Instance.ServerChangeScene("LobbyScene");
     }
 
     public void Go2Title()
     {
-        CustomRoomManager customRoomManager=(CustomRoomManager)NetworkManager.singleton;
-//        customRoomManager.ServerChangeScene("TitleScene");        
-        NetworkManager.singleton.StopHost();
+        CustomRoomManager.Instance.ReturnToTitle();
     }
 
     void GetColor()
