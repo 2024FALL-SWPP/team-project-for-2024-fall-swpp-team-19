@@ -11,7 +11,7 @@ public class TestScript : NetworkBehaviour
     void Start()
     {   
         toggleManager.InitializeToggles();
-        Invoke("DelayedMethod", 2f);
+        // Invoke("DelayedMethod", 2f);
     }
 
     // Update is called once per frame
