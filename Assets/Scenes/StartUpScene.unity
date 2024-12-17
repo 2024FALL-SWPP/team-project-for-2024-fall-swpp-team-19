@@ -226,7 +226,7 @@ MonoBehaviour:
   disconnectInactiveConnections: 0
   disconnectInactiveTimeout: 60
   authenticator: {fileID: 0}
-  playerPrefab: {fileID: 4806848440662003467, guid: 82a9b4420a90c3f458d9aac94c24241d, type: 3}
+  playerPrefab: {fileID: 2617871953943514019, guid: 6cb75c0c44bccf14c90d4796729fac9a, type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 0
   spawnPrefabs: []
@@ -255,6 +255,14 @@ MonoBehaviour:
   spawnPositions:
   - {x: 100, y: 100, z: 100}
   - {x: 100, y: 10, z: 100}
+  redPlayerPrefab: {fileID: 2370362751978321258, guid: 53111488b1528304a98554171ebbb245, type: 3}
+  bluePlayerPrefab: {fileID: 2617871953943514019, guid: 6cb75c0c44bccf14c90d4796729fac9a, type: 3}
+  greenPlayerPrefab: {fileID: 675561207987480450, guid: 94ea3cadfaea9014da6803e407f02a67, type: 3}
+  blackPlayerPrefab: {fileID: 5500288185849350062, guid: 5bc49c6fd6ccddb4a87d5a409adce1b0, type: 3}
+  yellowPlayerPrefab: {fileID: 2249191838931795419, guid: aa39c875db9fa0a4ba38341608959ff4, type: 3}
+  pinkPlayerPrefab: {fileID: 4903931424500047495, guid: 67b79c5d77c27a4458e2f79c0b6fa0e2, type: 3}
+  whitePlayerPrefab: {fileID: 3946549948338206345, guid: 20dc1b9b053aa6b42b3447a26e4567b4, type: 3}
+  purplePlayerPrefab: {fileID: 8089621220946675956, guid: 5a25e5f614c0f97499ba4de71e6b3ea2, type: 3}
 --- !u!114 &2055725981
 MonoBehaviour:
   m_ObjectHideFlags: 0
