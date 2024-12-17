@@ -1,27 +1,30 @@
-using Mirror;
 using System;
+using UnityEngine;
 
 [Serializable]
 public class PlayerData
 {
-    public string playerName;
-    public int score;
+    public bool isAlive;
+    public ColorEnum color;
 
     public PlayerData()
     {
-        playerName = "";
-        score = 0;
+        isAlive = true;
+        color = ColorEnum.Undefined;
     }
 
     public void UpdateField(string field, object value)
     {
         switch (field.ToLower())
         {
-            case "playername":
-                playerName = value as string;
+            case "isalive":
+                isAlive = (bool)value;
                 break;
-            case "score":
-                score = Convert.ToInt32(value);
+            case "color":
+                color = (ColorEnum)value;
+                break;
+            default:
+                Debug.LogWarning($"Field '{field}' not found in PlayerData.");
                 break;
         }
     }

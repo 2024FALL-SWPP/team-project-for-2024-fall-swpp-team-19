@@ -5,8 +5,18 @@ public class CustomRoomPlayer : NetworkRoomPlayer
 {
     [SyncVar]
     private ColorEnum color = ColorEnum.Undefined;
-    [SyncVar]
-    private bool isAlive = true;
+
+
+    public ColorEnum GetColor(){
+        return color;
+    }
+
+    [Command]
+    public void SetColor(ColorEnum newColor){
+        color = newColor;
+    }
+
+
     
     public override void OnStartClient()
     {
@@ -26,21 +36,6 @@ public class CustomRoomPlayer : NetworkRoomPlayer
         Debug.Log($"Room Player {index} exited room.");
     }
 
-    public ColorEnum GetColor(){
-        return color;
-    }
 
-    [Command]
-    public void SetColor(ColorEnum newColor){
-        color = newColor;
-    }
 
-    public bool GetIsAlive(){
-        return isAlive;
-    }
-
-    [Command]
-    public void SetIsAlive(bool newIsAlive){
-        isAlive = newIsAlive;
-    }
 }

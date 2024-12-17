@@ -23,6 +23,9 @@ public class TitleSceneManager : MonoBehaviour
     private bool isConnecting = false;
 
 
+    [Header("Network Settings")]
+    [Tooltip("The name of the Room Scene (Lobby Scene).")]
+    [SerializeField] private string roomSceneName = "LobbyScene";
 
     void Start()
     {
@@ -39,6 +42,26 @@ public class TitleSceneManager : MonoBehaviour
 
         NetworkClient.OnConnectedEvent += OnClientConnected;
         NetworkClient.OnDisconnectedEvent += OnClientDisconnected;
+    }
+
+
+    private void SetStartupMode(CustomRoomManager.StartupMode mode)
+    {
+        CustomRoomManager.Instance.startupMode = mode;
+    }
+ 
+    
+    private void LoadLobbyScene()
+    {
+        if (NetworkManager.singleton != null)
+        {
+            Debug.Log("Loading Lobby Scene...");
+            SceneManager.LoadScene(roomSceneName); // Load the Lobby Scene
+        }
+        else
+        {
+            Debug.LogError("NetworkManager not found!");
+        }
     }
 
     public void PlayGameButton()
@@ -66,7 +89,8 @@ public class TitleSceneManager : MonoBehaviour
 
     public void CreateLobbyButton()
     {
-        CustomRoomManager.Instance.StartHost();
+        NetworkManager.singleton.StartHost();
+        LoadLobbyScene();
     }
 
     public void JoinButton()
@@ -131,8 +155,8 @@ public class TitleSceneManager : MonoBehaviour
                             }
 
                             isConnecting = true;
-
                             CustomRoomManager.Instance.StartClient();
+                            LoadLobbyScene();
                             Debug.Log("Checking room existence...");
                         }
                         else

@@ -6,7 +6,6 @@ using UnityEngine.SceneManagement;
 public class CustomRoomManager : NetworkRoomManager
 {
     
-<<<<<<< HEAD
     public static CustomRoomManager Instance => (CustomRoomManager)NetworkManager.singleton;
 
     private string roomCode;
@@ -36,61 +35,59 @@ public class CustomRoomManager : NetworkRoomManager
         return System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(rawData));
     }
 
-
-=======
     
-    
-    public static CustomRoomManager Instance => (CustomRoomManager)NetworkManager.singleton;
->>>>>>> 0d172bd7da0fea7a354c2bb72aee4f01bdc50c2e
 
-    [Header("Title Scene")]
-    [Tooltip("The name of the Title Scene to return to.")]
-    public string titleSceneName = "TitleScene"; 
-
-
-  /// <summary>
-    /// Clean up host and client data and return to the Title Scene.
-    /// </summary>
-    public void ReturnToTitle()
+    public enum StartupMode
     {
-        Debug.Log("Cleaning up network state and returning to Title Scene...");
-
-        // Stop host if active
-        if (NetworkServer.active && NetworkClient.isConnected)
-        {
-            Debug.Log("Stopping Host...");
-            StopHost();
-        }
-        // Stop client if connected
-        else if (NetworkClient.isConnected)
-        {
-            Debug.Log("Stopping Client...");
-            StopClient();
-        }
-        // Stop server if only the server is active
-        else if (NetworkServer.active)
-        {
-            Debug.Log("Stopping Server...");
-            StopServer();
-        }
-
-        // Clear pending network states
-        NetworkClient.Shutdown();
-        NetworkServer.Shutdown();
-
-        // Return to Title Scene
-        Debug.Log($"Loading Title Scene: {titleSceneName}");
-        SceneManager.LoadScene(titleSceneName);
+        None,
+        Host,
+        Client
     }
+
+    [Header("Startup Configuration")]
+    [Tooltip("Determines what action to take when the LobbyScene starts.")]
+    public StartupMode startupMode = StartupMode.None;
+    // Called when the LobbyScene starts
+    public void HandleLobbyStartup()
+    {
+        switch (startupMode)
+        {
+            case StartupMode.Host:
+                if (!NetworkServer.active && !NetworkClient.active)
+                {
+                    Debug.Log("Starting as Host...");
+                    StartHost();
+                }
+                else
+                {
+                    Debug.LogWarning("Host or Client already active.");
+                }
+                break;
+
+            case StartupMode.Client:
+                if (!NetworkClient.isConnected)
+                {
+                    Debug.Log("Starting as Client...");
+                    StartClient();
+                }
+                else
+                {
+                    Debug.LogWarning("Client already connected.");
+                }
+                break;
+
+            case StartupMode.None:
+            default:
+                Debug.Log("No action specified for LobbyScene startup.");
+                break;
+        }
+        startupMode = StartupMode.None;
+    }
+
     
     
-    
-    
-    
-    
-    
-    
-        private string roomCode;
+
+
     public override void OnStartHost()
     {
         base.OnStartHost();
@@ -118,6 +115,50 @@ public class CustomRoomManager : NetworkRoomManager
         Debug.Log("All players are ready. Transitioning to the game...");
     }
 
+    public override bool OnRoomServerSceneLoadedForPlayer(NetworkConnectionToClient conn, GameObject roomPlayer, GameObject gamePlayer)
+    {
+        // Retrieve the color from the RoomPlayer
+        ColorEnum playerColor = roomPlayer.GetComponent<CustomRoomPlayer>().GetColor();
+        gamePlayer.GetComponent<CustomGamePlayer>().SetColor(playerColor);
+        return true;
+    }
+
+    public override GameObject OnRoomServerCreateGamePlayer(NetworkConnectionToClient conn, GameObject roomPlayer)
+    {
+        // Get the CustomRoomPlayer component to access the color
+        CustomRoomPlayer customRoomPlayer = roomPlayer.GetComponent<CustomRoomPlayer>();
+        ColorEnum playerColor = customRoomPlayer != null ? customRoomPlayer.GetColor() : ColorEnum.Undefined;
+
+        // Choose the corresponding prefab based on the color
+        GameObject selectedPrefab = GetPrefabForColor(playerColor);
+
+        // Fallback to the default playerPrefab if no prefab matches the color
+        if (selectedPrefab == null)
+        {
+            Debug.LogWarning($"No prefab found for color: {playerColor}. Using default playerPrefab.");
+            selectedPrefab = playerPrefab;
+        }
+
+        // Choose a random spawn position
+        if (availableSpawns == null || availableSpawns.Count == 0)
+        {
+            availableSpawns = new List<Vector3>(spawnPositions); // Reset spawn positions if needed
+        }
+
+        int randomIndex = Random.Range(0, availableSpawns.Count);
+        Vector3 spawnPosition = availableSpawns[randomIndex];
+        availableSpawns.RemoveAt(randomIndex); // Prevent reusing the same position
+
+        // Instantiate the selected prefab at the chosen spawn position
+        GameObject gamePlayer = Instantiate(selectedPrefab, spawnPosition, Quaternion.identity);
+        Debug.Log($"Created GamePlayer with color: {playerColor} at position: {spawnPosition}");
+
+        return gamePlayer;
+    }
+
+
+
+
 
     [Header("Game Player Spawn Settings")]
     [Tooltip("Positions in the Game scene where players can spawn.")]
@@ -125,39 +166,39 @@ public class CustomRoomManager : NetworkRoomManager
     private List<Vector3> availableSpawns;   
 
 
-    public override void OnRoomServerSceneChanged(string sceneName)
-    {
-        base.OnRoomServerSceneChanged(sceneName);
-        Debug.Log($"Scene changed to: {sceneName}");
-        // If this is the gameplay scene, handle player spawning ourselves
-        if (sceneName == GameplayScene)
-        {
-            // Prepare our spawn points
-            availableSpawns = new List<Vector3>(spawnPositions);
-            // Iterate over each connection and replace the RoomPlayer with a GamePlayer
-            foreach (var kvp in NetworkServer.connections)
-            {
-                NetworkConnectionToClient conn = kvp.Value;
-                if (conn != null && conn.identity != null && conn.identity.GetComponent<NetworkRoomPlayer>() != null)
-                {
-                    // Choose a random spawn point
-                    int randomIndex = Random.Range(0, availableSpawns.Count);
-                    Vector3 spawnPos = availableSpawns[randomIndex];
-                    availableSpawns.RemoveAt(randomIndex);
-                    // Instantiate the GamePlayer at the chosen spawn position
-                    GameObject playerInstance = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
-                    // Replace the existing RoomPlayer for this connection with the newly spawned GamePlayer
-                    NetworkServer.ReplacePlayerForConnection(conn, playerInstance, true);
-                    Debug.Log($"Spawned GamePlayer for Connection ID {conn.connectionId} at {spawnPos}");
-                }
-            }
-        }
-        else
-        {
-            // For non-gameplay scenes (like the room scene), call the base method
-            base.OnRoomServerSceneChanged(sceneName);
-        }
-    }
+    // public override void OnRoomServerSceneChanged(string sceneName)
+    // {
+    //     base.OnRoomServerSceneChanged(sceneName);
+    //     Debug.Log($"Scene changed to: {sceneName}");
+    //     // If this is the gameplay scene, handle player spawning ourselves
+    //     if (sceneName == GameplayScene)
+    //     {
+    //         // Prepare our spawn points
+    //         availableSpawns = new List<Vector3>(spawnPositions);
+    //         // Iterate over each connection and replace the RoomPlayer with a GamePlayer
+    //         foreach (var kvp in NetworkServer.connections)
+    //         {
+    //             NetworkConnectionToClient conn = kvp.Value;
+    //             if (conn != null && conn.identity != null && conn.identity.GetComponent<NetworkRoomPlayer>() != null)
+    //             {
+    //                 // Choose a random spawn point
+    //                 int randomIndex = Random.Range(0, availableSpawns.Count);
+    //                 Vector3 spawnPos = availableSpawns[randomIndex];
+    //                 availableSpawns.RemoveAt(randomIndex);
+    //                 // Instantiate the GamePlayer at the chosen spawn position
+    //                 GameObject playerInstance = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
+    //                 // Replace the existing RoomPlayer for this connection with the newly spawned GamePlayer
+    //                 NetworkServer.ReplacePlayerForConnection(conn, playerInstance, true);
+    //                 Debug.Log($"Spawned GamePlayer for Connection ID {conn.connectionId} at {spawnPos}");
+    //             }
+    //         }
+    //     }
+    //     else
+    //     {
+    //         // For non-gameplay scenes (like the room scene), call the base method
+    //         base.OnRoomServerSceneChanged(sceneName);
+    //     }
+    // }
 
     [Header("Player Prefabs")]
     public GameObject redPlayerPrefab;
@@ -201,29 +242,29 @@ public class CustomRoomManager : NetworkRoomManager
         return transport != null ? transport.port : 7777;
     }
 
-    public CustomRoomPlayer GetLocalRoomPlayer()
-    {
-        if (NetworkClient.localPlayer != null)
-        {
-            Debug.Log("Connection Verified");
-            CustomRoomManager customRoomManager = (CustomRoomManager)NetworkManager.singleton;
-            foreach (NetworkRoomPlayer roomPlayer in customRoomManager.roomSlots)
-            {
-                if (roomPlayer.connectionToClient == NetworkClient.localPlayer.connectionToClient) { 
-                    Debug.Log("Connection Verified");
-                  if (roomPlayer is CustomRoomPlayer customRoomPlayer)
-                    {
-                        Debug.Log("Room Player Verified");
-                        return customRoomPlayer;
-                    }
-                } 
-            }
-        }
-        Debug.Log("Connection Not Verified");
-        return null;
-    }
+    // public CustomRoomPlayer GetLocalRoomPlayer()
+    // {
+    //     if (NetworkClient.localPlayer != null)
+    //     {
+    //         Debug.Log("Connection Verified");
+    //         CustomRoomManager customRoomManager = (CustomRoomManager)NetworkManager.singleton;
+    //         foreach (NetworkRoomPlayer roomPlayer in customRoomManager.roomSlots)
+    //         {
+    //             if (roomPlayer.connectionToClient == NetworkClient.localPlayer.connectionToClient) { 
+    //                 Debug.Log("Connection Verified");
+    //               if (roomPlayer is CustomRoomPlayer customRoomPlayer)
+    //                 {
+    //                     Debug.Log("Room Player Verified");
+    //                     return customRoomPlayer;
+    //                 }
+    //             } 
+    //         }
+    //     }
+    //     Debug.Log("Connection Not Verified");
+    //     return null;
+    // }
 
-     [Header("Title Scene")]
+    [Header("Title Scene")]
     [Tooltip("The name of the Title Scene to return to.")]
     public string titleSceneName = "TitleScene";
 

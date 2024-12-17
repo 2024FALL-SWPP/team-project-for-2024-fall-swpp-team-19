@@ -28,7 +28,7 @@ public class ToggleManager : MonoBehaviour
         }
         toggles.Clear();
 
-        CustomRoomPlayer localRoomPlayer = customRoomManager.GetLocalRoomPlayer();
+        CustomRoomPlayer localRoomPlayer = NetworkClient.localPlayer.GetComponent<CustomRoomPlayer>();
 
         if (localRoomPlayer == null)
         {

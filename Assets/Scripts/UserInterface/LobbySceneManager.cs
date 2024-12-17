@@ -103,7 +103,7 @@ public class LobbySceneManager : MonoBehaviour
             return;            
         }
 
-        CustomRoomPlayer localRoomPlayer = customRoomManager.GetLocalRoomPlayer();
+        CustomRoomPlayer localRoomPlayer = NetworkClient.localPlayer.GetComponent<CustomRoomPlayer>();
         Debug.Log($"Local player color, index: {localRoomPlayer.GetColor()}, {index}");
         localRoomPlayer.SetColor(colors[index]);
         if (toggles[index].isOn)
