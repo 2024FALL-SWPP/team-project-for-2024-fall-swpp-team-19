@@ -40,6 +40,16 @@ public class CustomGamePlayer : NetworkBehaviour
                   $"Left={input.IsMovingLeft}, Right={input.IsMovingRight}, Interact={input.IsInteracting}");
     }
 
+    public int GetCompletedMinigames()
+    {
+        return completedMinigames;
+    }
+
+    public int GetMinigamesForClue()
+    {
+        return minigamesForClue;
+    }
+
     public void IncrementCompletedMinigames()
     {
         completedMinigames++;
