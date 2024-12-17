@@ -3,6 +3,16 @@ using UnityEngine;
 
 public class CustomGamePlayer : NetworkBehaviour
 {
+    [SyncVar]
+    private ColorEnum color = ColorEnum.Undefined;
+    public ColorEnum GetColor(){
+        return color;
+    }
+
+    public void SetColor(ColorEnum newColor){
+        color = newColor;
+    }
+
     [SyncVar] public bool isInMiniGame = false;
     public PlayerInputData InputData = new PlayerInputData();
     public GameObject interactingDevice;

@@ -441,9 +441,6 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   m_Radius: 0.35
-  m_Height: 1.7
-  m_Direction: 1
-  m_Center: {x: 0, y: 0.8, z: 0}
 --- !u!95 &2924495861554765140
 Animator:
   serializedVersion: 5
@@ -498,13 +495,6 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   speed: 50
-  jumpForce: 50
-  isGrounded: 0
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  groundCheckDistance: 1.2
-  groundGracePeriod: 0.2
   interactionRange: 300
 --- !u!114 &4744022309548320343
 MonoBehaviour:

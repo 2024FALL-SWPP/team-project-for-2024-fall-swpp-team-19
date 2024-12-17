@@ -100,7 +100,7 @@ public class Settings : MonoBehaviour
     }
 
     private void ExitButton(){
-        UnityEngine.SceneManagement.SceneManager.LoadScene("TitleScene");
+        CustomRoomManager.Instance.ReturnToTitle();
     }
 }
 
