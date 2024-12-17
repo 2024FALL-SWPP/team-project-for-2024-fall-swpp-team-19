@@ -46,9 +46,14 @@ public class ServerPlayerController : NetworkBehaviour
         HandleMovement();
         HandleJump();
 
-        if (Input.GetKeyDown(KeyCode.R))
+        if (Input.GetKeyDown(KeyCode.E))
         {
             HandleInteraction();
+        }
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            HandleAttack();
         }
     }
 
@@ -87,7 +92,6 @@ public class ServerPlayerController : NetworkBehaviour
         if (isInteracting) return;
 
         isInteracting = true;
-        animator.SetTrigger("Interaction");
 
         Collider[] colliders = Physics.OverlapSphere(transform.position, interactionRange);
         Debug.Log($"[ServerPlayerController] Player {netId} attempting interaction. {colliders.Length} objects in range.");
@@ -115,6 +119,11 @@ public class ServerPlayerController : NetworkBehaviour
     {
         yield return new WaitForSeconds(delay);
         isInteracting = false;
+    }
+
+    private void HandleAttack()
+    {
+        animator.SetTrigger("Interaction");
     }
 
     private void CheckGrounded()
