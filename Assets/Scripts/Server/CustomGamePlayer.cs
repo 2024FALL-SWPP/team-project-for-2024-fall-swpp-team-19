@@ -7,6 +7,9 @@ public class CustomGamePlayer : NetworkBehaviour
     public PlayerInputData InputData = new PlayerInputData();
     public GameObject interactingDevice;
 
+    private int completedMinigames = 0;
+    private int minigamesForClue = 3;
+
     private void Update()
     {
         if (!isLocalPlayer || !isInMiniGame) return;
@@ -35,5 +38,24 @@ public class CustomGamePlayer : NetworkBehaviour
         InputData = input;
         Debug.Log($"[CustomGamePlayer] Server received new input from Player {netId}: " +
                   $"Left={input.IsMovingLeft}, Right={input.IsMovingRight}, Interact={input.IsInteracting}");
+    }
+
+    public void IncrementCompletedMinigames()
+    {
+        completedMinigames++;
+        Debug.Log($"[CustomGamePlayer] Player {netId} completed {completedMinigames} of {minigamesForClue} games.");
+        CheckClueAvailable();
+    }
+
+    private void CheckClueAvailable()
+    {
+        if (completedMinigames >= minigamesForClue)
+        {
+            completedMinigames = 0;
+            if (minigamesForClue > 1)
+            {
+                minigamesForClue--;
+            }
+        }
     }
 }

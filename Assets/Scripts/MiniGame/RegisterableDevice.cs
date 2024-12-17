@@ -35,6 +35,8 @@ public class RegisterableDevice : NetworkBehaviour
                 Debug.LogError("[RegisterableDevice] Failed to get MiniGameBase from prefab.");
                 return false;
             }
+
+            player.interactingDevice = gameObject;
         }
 
         // Register the player in the mini-game

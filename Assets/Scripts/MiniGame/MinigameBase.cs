@@ -147,6 +147,7 @@ public abstract class MiniGameBase : NetworkBehaviour
     {
         foreach (var player in currentPlayers)
         {
+            player.IncrementCompletedMinigames();
             UnregisterPlayer(player);
             NetworkServer.Destroy(player.interactingDevice);
             player.interactingDevice = null;
