@@ -1826,11 +1826,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bde389d0fc066ad4b94ea113d85bfa9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  postProcessingVolume: {fileID: 461927822262745151, guid: 6ccd5ddece5fb1447be0f881f455b43f, type: 3}
+  audioMixer: {fileID: 24100000, guid: e68d1a4b9a243aa428dc9a4b53c82da4, type: 2}
   volumeSlider: {fileID: 6841711963048476761}
   brightnessSlider: {fileID: 6841711964263002009}
   sensitivitySlider: {fileID: 6841711963012744374}
   mouseSensitivity: 100
+  volume: 0
   exitButton: {fileID: 6380256471600400992}
 --- !u!1 &6841711964842394955
 GameObject:
