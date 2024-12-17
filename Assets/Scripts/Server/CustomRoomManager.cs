@@ -2,6 +2,7 @@ using UnityEngine;
 using Mirror;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class CustomRoomManager : NetworkRoomManager
 {
@@ -92,6 +93,14 @@ public class CustomRoomManager : NetworkRoomManager
     private List<Vector3> availableSpawns;   
 
 
+    [Header("Minigame Device Spawn Settings")]
+    [Tooltip("Positions and Rotations in the Game scene where Minigame can spawn.")]
+    public Vector3[] deviceSpawnPositions;
+    public Vector3[] deviceSpawnRotations;
+    public Vector3[] deviceLateSpawnPositions;
+    public Vector3[] deviceLateSpawnRotations;
+
+
     public override void OnRoomServerSceneChanged(string sceneName)
     {
         base.OnRoomServerSceneChanged(sceneName);
@@ -118,11 +127,40 @@ public class CustomRoomManager : NetworkRoomManager
                     Debug.Log($"Spawned GamePlayer for Connection ID {conn.connectionId} at {spawnPos}");
                 }
             }
+            
+            // Prepare out spawn points of devices
+            for (int i = 0; i < deviceSpawnPositions.Length; i++)
+            {
+                Vector3 position = deviceSpawnPositions[i];
+                Vector3 rotation = deviceSpawnRotations[i];
+
+                int randomIndex = Random.Range(0, 4);
+                GameObject minigameDevice = Instantiate(spawnPrefabs[randomIndex], position, Quaternion.Euler(rotation.x, rotation.y, rotation.z));
+                NetworkServer.Spawn(minigameDevice);
+            }
+
+            StartCoroutine(LateSpawn());
         }
         else
         {
             // For non-gameplay scenes (like the room scene), call the base method
             base.OnRoomServerSceneChanged(sceneName);
+        }
+    }
+
+    private IEnumerator LateSpawn()
+    {
+        yield return new WaitForSeconds(10f);
+
+        // Prepare out spawn points of devices
+        for (int i = 0; i < deviceLateSpawnPositions.Length; i++)
+        {
+            Vector3 position = deviceLateSpawnPositions[i];
+            Vector3 rotation = deviceLateSpawnRotations[i];
+
+            int randomIndex = Random.Range(0, 4);
+            GameObject minigameDevice = Instantiate(spawnPrefabs[randomIndex], position, Quaternion.Euler(rotation.x, rotation.y, rotation.z));
+            NetworkServer.Spawn(minigameDevice);
         }
     }
 

@@ -15,8 +15,6 @@ public class GalagaMinigame : MiniGameBase
 
     private List<RawImage> enemies = new List<RawImage>();
 
-    private int score = 0;
-    private int targetScore = 3;
 
     private float planeSpeed = 300f;
     private float minX = -65f;
@@ -31,6 +29,8 @@ public class GalagaMinigame : MiniGameBase
     {
         base.StartGame();
         Debug.Log("[GalagaMinigame] Starting game.");
+        base.score = 0;
+        base.targetScore = 3;
         StartCoroutine(CountdownAndStart());
     }
 
@@ -43,7 +43,7 @@ public class GalagaMinigame : MiniGameBase
             yield return new WaitForSeconds(1f);
         }
         countdownText.text = "";
-        scoreText.text = "Score: " + score.ToString() + "/" + targetScore.ToString();
+        scoreText.text = "Score: " + base.score.ToString() + "/" + base.targetScore.ToString();
         canMovePlane = true;
         canShootBullet = true;
         StartEnemySpawns();
@@ -86,7 +86,7 @@ public class GalagaMinigame : MiniGameBase
     {
         Debug.Log("[GalagaMinigame] Resetting game.");
         base.ResetGame();
-        score = 0;
+        base.score = 0;
         enemies.Clear();
     }
 
@@ -243,7 +243,7 @@ public class GalagaMinigame : MiniGameBase
     [Server]
     public void IncrementScore()
     {
-        score++;
-        scoreText.text = "Score: " + score.ToString() + "/" + targetScore.ToString();
+        base.score++;
+        scoreText.text = "Score: " + base.score.ToString() + "/" + base.targetScore.ToString();
     }
 }

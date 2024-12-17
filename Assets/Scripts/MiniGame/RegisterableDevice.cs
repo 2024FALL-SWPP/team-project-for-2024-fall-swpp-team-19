@@ -35,6 +35,8 @@ public class RegisterableDevice : NetworkBehaviour
                 Debug.LogError("[RegisterableDevice] Failed to get MiniGameBase from prefab.");
                 return false;
             }
+
+            player.interactingDevice = gameObject;
         }
 
         // Register the player in the mini-game
@@ -47,5 +49,10 @@ public class RegisterableDevice : NetworkBehaviour
         if (activeMiniGame == null) return;
 
         activeMiniGame.UnregisterPlayer(player);
+    }
+
+    protected void OnDestroy()
+    {
+        Debug.Log("[RegisterableDevice] This device is destroyed!");
     }
 }

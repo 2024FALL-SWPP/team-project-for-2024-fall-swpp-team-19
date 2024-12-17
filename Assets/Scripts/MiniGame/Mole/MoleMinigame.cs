@@ -10,8 +10,6 @@ public class MoleMinigame : MiniGameBase
     public GameObject[] buttons;
     public GameObject[] moles;
 
-    private int score = 0;
-    private int targetScore = 100;
     private GameObject activeButton;
     private GameObject activeMole;
 
@@ -19,14 +17,17 @@ public class MoleMinigame : MiniGameBase
     public override void StartGame()
     {
         base.StartGame();
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
         Debug.Log("[MoleMinigame] Starting game.");
+        base.score = 0;
+        base.targetScore = 3;
         StartCoroutine(CountdownAndStart());
     }
 
     [Server]
     private IEnumerator CountdownAndStart()
     {
-        score = 0;
         scoreText.text = "";
         for (int i = 3; i > 0; i--)
         {
@@ -34,9 +35,9 @@ public class MoleMinigame : MiniGameBase
             yield return new WaitForSeconds(1f);
         }
         countdownText.text = "";
-        scoreText.text = "Score: " + score.ToString() + "/" + targetScore.ToString();
+        scoreText.text = "Score: " + base.score.ToString() + "/" + base.targetScore.ToString();
 
-        while (score < targetScore)
+        while (base.score < base.targetScore)
         {
             if (activeButton != null)
                 activeButton.SetActive(false);
@@ -63,10 +64,18 @@ public class MoleMinigame : MiniGameBase
         {
             activeButton.SetActive(false);
             activeMole.SetActive(false);
-            score++;
-            scoreText.text = "Score: " + score.ToString() + "/" + targetScore.ToString();
+            base.score++;
+            scoreText.text = "Score: " + base.score.ToString() + "/" + base.targetScore.ToString();
 
             activeButton.GetComponent<Button>().onClick.RemoveListener(OnButtonClicked);
         }
+    }
+
+    [Server]
+    public override void ClearGame()
+    {
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
+        base.ClearGame();
     }
 }

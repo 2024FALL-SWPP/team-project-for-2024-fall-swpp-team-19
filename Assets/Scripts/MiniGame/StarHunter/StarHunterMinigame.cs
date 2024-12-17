@@ -12,17 +12,18 @@ public class StarHunterMinigame : MiniGameBase
     public bool duckIsGrounded = true;
 
     private Rigidbody2D duckRb;
-    private float duckSpeed = 300f;
+    private float duckSpeed = 500f;
     private float duckJumpForce = 1400f;
     private bool canDuckMove = false;
     private bool canDuckJump = false;
-    private int score = 0;
 
     [Server]
     public override void StartGame()
     {
         base.StartGame();
         Debug.Log("[StarHunterMinigame] Starting game.");
+        base.score = 0;
+        base.targetScore = 1;
         duckRb = duck.GetComponent<Rigidbody2D>();
         StartCoroutine(CountdownAndStart());
     }
@@ -51,13 +52,13 @@ public class StarHunterMinigame : MiniGameBase
     public override void UpdateGameLogic()
     {
         base.UpdateGameLogic();
+        
+        // Log how many players we're processing input for this frame
+        Debug.Log($"[StarHunterMinigame] UpdateGameLogic: Processing input for {currentPlayers.Count} players.");
 
-        if (canDuckMove)
+        foreach (var player in currentPlayers)
         {
-            // Log how many players we're processing input for this frame
-            Debug.Log($"[StarHunterMinigame] UpdateGameLogic: Processing input for {currentPlayers.Count} players.");
-
-            foreach (var player in currentPlayers)
+            if (canDuckMove)
             {
                 var input = player.InputData;
                 
@@ -67,6 +68,7 @@ public class StarHunterMinigame : MiniGameBase
 
                 HandleMovement(player, input);
                 HandleJumping(player, input);
+                HandleEscape(player, input);
             }
         }
     }
@@ -96,8 +98,17 @@ public class StarHunterMinigame : MiniGameBase
     }
 
     [Server]
+    private void HandleEscape(CustomGamePlayer player, PlayerInputData input)
+    {
+        if (input.IsEscape)
+        {
+            base.ResetGame();
+        }
+    }
+
+    [Server]
     public void IncrementScore()
     {
-        score++;
+        base.score++;
     }
 }
