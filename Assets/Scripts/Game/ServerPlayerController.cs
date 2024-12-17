@@ -217,7 +217,7 @@ public class ServerPlayerController : NetworkBehaviour
         CustomGamePlayer owner = callerPlayer.GetComponent<CustomGamePlayer>();
         PlayerData playerData = PlayerDataManager.Instance.GetPlayerData(owner.GetColor());
         playerData.UpdateField("isAlive", false);
-        
+
         if (animator != null)
         {
             animator.SetTrigger("Die");

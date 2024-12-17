@@ -27,6 +27,7 @@ public class PlayerHealth : NetworkBehaviour
 
     private IEnumerator HandleDeath()
     {
+        GetComponent<MusicController>().PlayDeathSound();
         yield return new WaitForSeconds(2.0f); // Adjust based on animation duration
 
         // Disable the character
