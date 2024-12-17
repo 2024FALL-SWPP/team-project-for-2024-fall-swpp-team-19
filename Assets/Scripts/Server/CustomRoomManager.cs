@@ -37,54 +37,6 @@ public class CustomRoomManager : NetworkRoomManager
     }
 
     
-
-    public enum StartupMode
-    {
-        None,
-        Host,
-        Client
-    }
-
-    [Header("Startup Configuration")]
-    [Tooltip("Determines what action to take when the LobbyScene starts.")]
-    public StartupMode startupMode = StartupMode.None;
-    // Called when the LobbyScene starts
-    public void HandleLobbyStartup()
-    {
-        switch (startupMode)
-        {
-            case StartupMode.Host:
-                if (!NetworkServer.active && !NetworkClient.active)
-                {
-                    Debug.Log("Starting as Host...");
-                    StartHost();
-                }
-                else
-                {
-                    Debug.LogWarning("Host or Client already active.");
-                }
-                break;
-
-            case StartupMode.Client:
-                if (!NetworkClient.isConnected)
-                {
-                    Debug.Log("Starting as Client...");
-                    StartClient();
-                }
-                else
-                {
-                    Debug.LogWarning("Client already connected.");
-                }
-                break;
-
-            case StartupMode.None:
-            default:
-                Debug.Log("No action specified for LobbyScene startup.");
-                break;
-        }
-        startupMode = StartupMode.None;
-    }
-    
     public override void OnStartHost()
     {
         base.OnStartHost();
@@ -92,25 +44,6 @@ public class CustomRoomManager : NetworkRoomManager
         Debug.Log($"Room Code (External IP): {roomCode}");
     }
 
-    public override void OnStartServer()
-    {
-        base.OnStartServer();
-        Debug.Log("Server has started.");
-    }
-
-    public override void OnRoomServerAddPlayer(NetworkConnectionToClient conn)
-    {
-        // In the room scene, let the base method create the RoomPlayer.
-        base.OnRoomServerAddPlayer(conn);
-        Debug.Log($"Player added to room: Connection ID {conn.connectionId}");
-    }
-
-    public override void OnRoomServerPlayersReady()
-    {
-        // Call base to handle the normal transition to the gameplay scene
-        base.OnRoomServerPlayersReady();
-        Debug.Log("All players are ready. Transitioning to the game...");
-    }
 
     public override bool OnRoomServerSceneLoadedForPlayer(NetworkConnectionToClient conn, GameObject roomPlayer, GameObject gamePlayer)
     {
@@ -120,37 +53,37 @@ public class CustomRoomManager : NetworkRoomManager
         return true;
     }
 
+
+
     public override GameObject OnRoomServerCreateGamePlayer(NetworkConnectionToClient conn, GameObject roomPlayer)
     {
-        // Get the CustomRoomPlayer component to access the color
         CustomRoomPlayer customRoomPlayer = roomPlayer.GetComponent<CustomRoomPlayer>();
         ColorEnum playerColor = customRoomPlayer != null ? customRoomPlayer.GetColor() : ColorEnum.Undefined;
 
-        // Choose the corresponding prefab based on the color
-        GameObject selectedPrefab = GetPrefabForColor(playerColor);
+        // Initialize PlayerData in PlayerDataManager
+        PlayerDataManager.Instance.InitializePlayerData(playerColor);
 
-        // Fallback to the default playerPrefab if no prefab matches the color
+        GameObject selectedPrefab = GetPrefabForColor(playerColor);
         if (selectedPrefab == null)
         {
             Debug.LogWarning($"No prefab found for color: {playerColor}. Using default playerPrefab.");
             selectedPrefab = playerPrefab;
-
         }
 
-        // Choose a random spawn position
         if (availableSpawns == null || availableSpawns.Count == 0)
         {
-            availableSpawns = new List<Vector3>(spawnPositions); // Reset spawn positions if needed
+            availableSpawns = new List<Vector3>(spawnPositions);
         }
 
         int randomIndex = Random.Range(0, availableSpawns.Count);
         Vector3 spawnPosition = availableSpawns[randomIndex];
-        availableSpawns.RemoveAt(randomIndex); // Prevent reusing the same position
+        availableSpawns.RemoveAt(randomIndex);
 
-        // Instantiate the selected prefab at the chosen spawn position
         GameObject gamePlayer = Instantiate(selectedPrefab, spawnPosition, Quaternion.identity);
-        Debug.Log($"Created GamePlayer with color: {playerColor} at position: {spawnPosition}");
 
+        NetworkServer.ReplacePlayerForConnection(conn, gamePlayer, ReplacePlayerOptions.KeepAuthority);
+
+        Debug.Log($"Created GamePlayer with color: {playerColor} at position: {spawnPosition}");
         return gamePlayer;
     }
 
@@ -176,10 +109,11 @@ public class CustomRoomManager : NetworkRoomManager
     {
         base.OnRoomServerSceneChanged(sceneName);
         Debug.Log($"Scene changed to: {sceneName}");
+
         // If this is the gameplay scene, handle player spawning ourselves
         if (sceneName == GameplayScene)
         {
-            // Prepare out spawn points of devices
+            // Prepare to spawn minigame devices
             for (int i = 0; i < deviceSpawnPositions.Length; i++)
             {
                 Vector3 position = deviceSpawnPositions[i];
@@ -191,6 +125,10 @@ public class CustomRoomManager : NetworkRoomManager
             }
 
             StartCoroutine(LateSpawn());
+
+            // Call AssignTargetsInCircle to set player targets
+            PlayerDataManager.Instance.AssignTargetsInCircle();
+            Debug.Log("Assigned targets for all players in a circle.");
         }
     }
 
@@ -252,27 +190,6 @@ public class CustomRoomManager : NetworkRoomManager
         return transport != null ? transport.port : 7777;
     }
 
-    // public CustomRoomPlayer GetLocalRoomPlayer()
-    // {
-    //     if (NetworkClient.localPlayer != null)
-    //     {
-    //         Debug.Log("Connection Verified");
-    //         CustomRoomManager customRoomManager = (CustomRoomManager)NetworkManager.singleton;
-    //         foreach (NetworkRoomPlayer roomPlayer in customRoomManager.roomSlots)
-    //         {
-    //             if (roomPlayer.connectionToClient == NetworkClient.localPlayer.connectionToClient) { 
-    //                 Debug.Log("Connection Verified");
-    //               if (roomPlayer is CustomRoomPlayer customRoomPlayer)
-    //                 {
-    //                     Debug.Log("Room Player Verified");
-    //                     return customRoomPlayer;
-    //                 }
-    //             } 
-    //         }
-    //     }
-    //     Debug.Log("Connection Not Verified");
-    //     return null;
-    // }
 
     [Header("Title Scene")]
     [Tooltip("The name of the Title Scene to return to.")]
@@ -296,4 +213,46 @@ public class CustomRoomManager : NetworkRoomManager
     }
 
     
+
+
+    public void PrintTargetCircle()
+    {
+        if (PlayerDataManager.Instance == null)
+        {
+            Debug.LogWarning("PlayerDataManager is not initialized.");
+            return;
+        }
+
+        var playerDataMap = PlayerDataManager.Instance.playerDataMap;
+
+        if (playerDataMap.Count == 0)
+        {
+            Debug.Log("No players available to print target circle.");
+            return;
+        }
+
+        Debug.Log("=== Current Target Circle ===");
+        foreach (var player in playerDataMap)
+        {
+            Debug.Log($"Player {player.Key} -> Targets: {player.Value.target}");
+        }
+    }
+
+    private bool isGameStarted = false;
+
+    void Update()
+    {
+        // Debugging: Keep printing the playerDataMap size
+        if (PlayerDataManager.Instance != null)
+        {
+            if(PlayerDataManager.Instance.playerDataMap.Count > 1 && !isGameStarted)
+            {
+                PlayerDataManager.Instance.AssignTargetsInCircle();
+                isGameStarted = true;
+            }
+            int dataSize = PlayerDataManager.Instance.playerDataMap.Count;
+            Debug.Log($"PlayerDataMap Size: {dataSize}");
+        }
+        PrintTargetCircle();
+    }
 }

@@ -44,12 +44,6 @@ public class TitleSceneManager : MonoBehaviour
         NetworkClient.OnDisconnectedEvent += OnClientDisconnected;
     }
 
-
-    private void SetStartupMode(CustomRoomManager.StartupMode mode)
-    {
-        CustomRoomManager.Instance.startupMode = mode;
-    }
- 
     
     private void LoadLobbyScene()
     {
