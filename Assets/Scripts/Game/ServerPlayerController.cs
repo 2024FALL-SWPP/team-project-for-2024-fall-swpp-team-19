@@ -22,6 +22,7 @@ public class ServerPlayerController : NetworkBehaviour
     // Combat-related variables
     [SerializeField] private float attackRange = 200.0f;
     [SerializeField] public LayerMask playerLayer;
+
     [SyncVar] private bool isPenalized = false;
     private bool canAttack = true;
 
@@ -208,10 +209,20 @@ public class ServerPlayerController : NetworkBehaviour
     void RpcApplyPenalty()
     {
         StartCoroutine(ApplyPenalty());
+          // CooldownUI 싱글톤 호출
+        if (CoolDownUI.Instance != null)
+        {
+            CoolDownUI.Instance.StartCooldown(30.0f); // 30초 쿨다운
+        }
+        else
+        {
+            Debug.LogError("CooldownUI Instance is not found!");
+        }
     }
 
     private IEnumerator ApplyPenalty()
     {
+        CmdTriggerRunningAnimation(false);
         isPenalized = true;
         yield return new WaitForSeconds(30f); // 30s penalty
         isPenalized = false;
