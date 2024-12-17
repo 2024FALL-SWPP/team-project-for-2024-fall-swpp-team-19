@@ -82,7 +82,7 @@ MonoBehaviour:
   offlineScene: 
   onlineScene: 
   offlineSceneLoadDelay: 0
-  transport: {fileID: 0}
+  transport: {fileID: 3735764968938536941}
   networkAddress: localhost
   maxConnections: 100
   disconnectInactiveConnections: 0
@@ -91,7 +91,11 @@ MonoBehaviour:
   playerPrefab: {fileID: 5128931314094185469, guid: 9363a8fb8e9dc1944ad11186b8089d43, type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 0
-  spawnPrefabs: []
+  spawnPrefabs:
+  - {fileID: 5295243158929327259, guid: 07f11aff4884b4ff0a2985cfd179d9e7, type: 3}
+  - {fileID: 5688730546774849242, guid: 497dee62c2cd84fe59e9568ccd78d6c0, type: 3}
+  - {fileID: 3416774530011126836, guid: bb80fe052136642eba4596386fbd782f, type: 3}
+  - {fileID: 1993333480318940484, guid: 3caee9542f1717c42950d89a6a1233f7, type: 3}
   exceptionsDisconnect: 0
   snapshotSettings:
     bufferTimeMultiplier: 2
@@ -107,15 +111,62 @@ MonoBehaviour:
   evaluationMethod: 0
   evaluationInterval: 3
   timeInterpolationGui: 0
-  showRoomGUI: 1
+  showRoomGUI: 0
   minPlayers: 1
   roomPlayerPrefab: {fileID: 5538865062034601255, guid: 77ad7ee53c15d044883288f0440b6d7c, type: 3}
   RoomScene: Assets/Scenes/LobbyScene.unity
   GameplayScene: Assets/Scenes/GameScene.unity
   _allPlayersReady: 0
   clientIndex: 0
+  startupMode: 0
   spawnPositions:
   - {x: 100, y: 100, z: 100}
+  - {x: 100, y: 100, z: 100}
+  - {x: 100, y: 100, z: 100}
+  deviceSpawnPositions:
+  - {x: 25, y: 20, z: 25}
+  - {x: 250, y: 20, z: 75}
+  - {x: 250, y: 20, z: 250}
+  - {x: 75, y: 20, z: 250}
+  - {x: 975, y: 20, z: 25}
+  - {x: 925, y: 20, z: 250}
+  - {x: 750, y: 20, z: 250}
+  - {x: 750, y: 20, z: 75}
+  - {x: 975, y: 20, z: 975}
+  - {x: 750, y: 20, z: 925}
+  - {x: 750, y: 20, z: 750}
+  - {x: 925, y: 20, z: 750}
+  - {x: 25, y: 20, z: 975}
+  - {x: 75, y: 20, z: 750}
+  - {x: 250, y: 20, z: 750}
+  - {x: 250, y: 20, z: 925}
+  deviceSpawnRotations:
+  - {x: 0, y: 45, z: 0}
+  - {x: 0, y: 270, z: 0}
+  - {x: 0, y: 225, z: 0}
+  - {x: 0, y: 180, z: 0}
+  - {x: 0, y: 315, z: 0}
+  - {x: 0, y: 180, z: 0}
+  - {x: 0, y: 135, z: 0}
+  - {x: 0, y: 90, z: 0}
+  - {x: 0, y: 225, z: 0}
+  - {x: 0, y: 90, z: 0}
+  - {x: 0, y: 45, z: 0}
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 135, z: 0}
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 315, z: 0}
+  - {x: 0, y: 270, z: 0}
+  deviceLateSpawnPositions:
+  - {x: 375, y: 20, z: 375}
+  - {x: 625, y: 20, z: 375}
+  - {x: 625, y: 20, z: 625}
+  - {x: 375, y: 20, z: 625}
+  deviceLateSpawnRotations:
+  - {x: 0, y: 45, z: 0}
+  - {x: 0, y: 315, z: 0}
+  - {x: 0, y: 225, z: 0}
+  - {x: 0, y: 135, z: 0}
   redPlayerPrefab: {fileID: 0}
   bluePlayerPrefab: {fileID: 0}
   greenPlayerPrefab: {fileID: 0}
@@ -124,3 +175,4 @@ MonoBehaviour:
   pinkPlayerPrefab: {fileID: 0}
   whitePlayerPrefab: {fileID: 0}
   purplePlayerPrefab: {fileID: 0}
+  titleSceneName: TitleScene
