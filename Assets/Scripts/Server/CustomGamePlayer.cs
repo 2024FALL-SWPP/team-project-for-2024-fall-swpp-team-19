@@ -5,6 +5,7 @@ public class CustomGamePlayer : NetworkBehaviour
 {
     [SyncVar] public bool isInMiniGame = false;
     public PlayerInputData InputData = new PlayerInputData();
+    public GameObject interactingDevice;
 
     private void Update()
     {
@@ -21,7 +22,8 @@ public class CustomGamePlayer : NetworkBehaviour
             IsMovingRight = Input.GetKey(KeyCode.D),
             IsJumping = Input.GetKey(KeyCode.Space),
             IsInteracting = Input.GetKeyDown(KeyCode.E),
-            IsInteractionReleased = Input.GetKeyUp(KeyCode.E)
+            IsInteractionReleased = Input.GetKeyUp(KeyCode.E),
+            IsEscape = Input.GetKey(KeyCode.Escape)
         };
 
         CmdUpdateInput(newInput);

@@ -12,6 +12,9 @@ public abstract class MiniGameBase : NetworkBehaviour
     // SyncList to track player netIds for all clients
     public SyncList<uint> playerIdsInGame = new SyncList<uint>();
 
+    public int score;
+    public int targetScore;
+
     private Canvas miniGameCanvas;
 
     [SerializeField] private int requiredPlayersToStart = 1;
@@ -58,6 +61,7 @@ public abstract class MiniGameBase : NetworkBehaviour
         else
         {
             miniGameCanvas.enabled = false;
+            NetworkServer.Destroy(gameObject);
             Debug.Log($"[MiniGameBase] Canvas hidden for local player {localPlayer.netId}.");
         }
     }
@@ -127,9 +131,26 @@ public abstract class MiniGameBase : NetworkBehaviour
     [Server]
     public virtual void ResetGame()
     {
+        foreach (var player in currentPlayers)
+        {
+            UnregisterPlayer(player);
+            NetworkServer.Destroy(player.interactingDevice);
+            player.interactingDevice = null;
+        }
         gameStarted = false;
         currentPlayers.Clear();
         playerIdsInGame.Clear();
+    }
+
+    [Server]
+    public virtual void ClearGame()
+    {
+        foreach (var player in currentPlayers)
+        {
+            UnregisterPlayer(player);
+            NetworkServer.Destroy(player.interactingDevice);
+            player.interactingDevice = null;
+        }
     }
 
     [ServerCallback]
@@ -143,6 +164,10 @@ public abstract class MiniGameBase : NetworkBehaviour
     public virtual void UpdateGameLogic()
     {
         // Implement logic in subclasses if needed
+        if (score >= targetScore)
+        {
+            ClearGame();
+        }
     }
 
     [Server]

@@ -48,4 +48,9 @@ public class RegisterableDevice : NetworkBehaviour
 
         activeMiniGame.UnregisterPlayer(player);
     }
+
+    protected void OnDestroy()
+    {
+        Debug.Log("[RegisterableDevice] This device is destroyed!");
+    }
 }
