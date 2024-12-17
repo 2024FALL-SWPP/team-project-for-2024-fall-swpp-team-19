@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class CustomRoomManager : NetworkRoomManager
 {
-    
+   
     public static CustomRoomManager Instance => (CustomRoomManager)NetworkManager.singleton;
 
     private string roomCode;
@@ -84,10 +84,50 @@ public class CustomRoomManager : NetworkRoomManager
         startupMode = StartupMode.None;
     }
 
+  
+  /// <summary>
+    /// Clean up host and client data and return to the Title Scene.
+    /// </summary>
+    public void ReturnToTitle()
+    {
+        Debug.Log("Cleaning up network state and returning to Title Scene...");
+
+        // Stop host if active
+        if (NetworkServer.active && NetworkClient.isConnected)
+        {
+            Debug.Log("Stopping Host...");
+            StopHost();
+        }
+        // Stop client if connected
+        else if (NetworkClient.isConnected)
+        {
+            Debug.Log("Stopping Client...");
+            StopClient();
+        }
+        // Stop server if only the server is active
+        else if (NetworkServer.active)
+        {
+            Debug.Log("Stopping Server...");
+            StopServer();
+        }
+
+        // Clear pending network states
+        NetworkClient.Shutdown();
+        NetworkServer.Shutdown();
+
+        // Return to Title Scene
+        Debug.Log($"Loading Title Scene: {titleSceneName}");
+        SceneManager.LoadScene(titleSceneName);
+    }
     
     
-
-
+    
+    
+    
+    
+    
+    
+        private string roomCode;
     public override void OnStartHost()
     {
         base.OnStartHost();
@@ -137,6 +177,7 @@ public class CustomRoomManager : NetworkRoomManager
         {
             Debug.LogWarning($"No prefab found for color: {playerColor}. Using default playerPrefab.");
             selectedPrefab = playerPrefab;
+
         }
 
         // Choose a random spawn position

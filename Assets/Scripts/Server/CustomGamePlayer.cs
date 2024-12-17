@@ -15,6 +15,10 @@ public class CustomGamePlayer : NetworkBehaviour
 
     [SyncVar] public bool isInMiniGame = false;
     public PlayerInputData InputData = new PlayerInputData();
+    public GameObject interactingDevice;
+
+    private int completedMinigames = 0;
+    private int minigamesForClue = 3;
 
     private void Update()
     {
@@ -31,7 +35,8 @@ public class CustomGamePlayer : NetworkBehaviour
             IsMovingRight = Input.GetKey(KeyCode.D),
             IsJumping = Input.GetKey(KeyCode.Space),
             IsInteracting = Input.GetKeyDown(KeyCode.E),
-            IsInteractionReleased = Input.GetKeyUp(KeyCode.E)
+            IsInteractionReleased = Input.GetKeyUp(KeyCode.E),
+            IsEscape = Input.GetKey(KeyCode.Escape)
         };
 
         CmdUpdateInput(newInput);
@@ -43,5 +48,34 @@ public class CustomGamePlayer : NetworkBehaviour
         InputData = input;
         Debug.Log($"[CustomGamePlayer] Server received new input from Player {netId}: " +
                   $"Left={input.IsMovingLeft}, Right={input.IsMovingRight}, Interact={input.IsInteracting}");
+    }
+
+    public int GetCompletedMinigames()
+    {
+        return completedMinigames;
+    }
+
+    public int GetMinigamesForClue()
+    {
+        return minigamesForClue;
+    }
+
+    public void IncrementCompletedMinigames()
+    {
+        completedMinigames++;
+        Debug.Log($"[CustomGamePlayer] Player {netId} completed {completedMinigames} of {minigamesForClue} games.");
+        CheckClueAvailable();
+    }
+
+    private void CheckClueAvailable()
+    {
+        if (completedMinigames >= minigamesForClue)
+        {
+            completedMinigames = 0;
+            if (minigamesForClue > 1)
+            {
+                minigamesForClue--;
+            }
+        }
     }
 }

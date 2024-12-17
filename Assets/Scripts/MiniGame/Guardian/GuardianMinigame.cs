@@ -15,9 +15,6 @@ public class GuardianMinigame : MiniGameBase
 
     private List<RawImage> enemies = new List<RawImage>();
 
-    private int score = 0;
-    private int targetScore = 3;
-
     private float guardianSpeed = 300f;
     private float minX = -65f;
     private float maxX = 65f;
@@ -31,6 +28,8 @@ public class GuardianMinigame : MiniGameBase
     {
         base.StartGame();
         Debug.Log("[GuardianMinigame] Starting game.");
+        base.score = 0;
+        base.targetScore = 3;
         StartCoroutine(CountdownAndStart());
     }
 
@@ -43,7 +42,7 @@ public class GuardianMinigame : MiniGameBase
             yield return new WaitForSeconds(1f);
         }
         countdownText.text = "";
-        scoreText.text = "Score: " + score.ToString() + "/" + targetScore.ToString();
+        scoreText.text = "Score: " + base.score.ToString() + "/" + base.targetScore.ToString();
         canMoveGuardian = true;
         canShootCannonball = true;
         StartEnemySpawns();
@@ -88,7 +87,7 @@ public class GuardianMinigame : MiniGameBase
     {
         Debug.Log("[GuardianMinigame] Resetting game.");
         base.ResetGame();
-        score = 0;
+        base.score = 0;
         enemies.Clear();
     }
 
@@ -245,7 +244,7 @@ public class GuardianMinigame : MiniGameBase
     [Server]
     public void IncrementScore()
     {
-        score++;
-        scoreText.text = "Score: " + score.ToString() + "/" + targetScore.ToString();
+        base.score++;
+        scoreText.text = "Score: " + base.score.ToString() + "/" + base.targetScore.ToString();
     }
 }

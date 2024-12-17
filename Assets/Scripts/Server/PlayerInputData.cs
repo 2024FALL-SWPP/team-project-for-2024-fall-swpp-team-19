@@ -14,4 +14,5 @@ public class PlayerInputData
     public bool IsJumping;
     public bool IsInteracting;
     public bool IsInteractionReleased;
+    public bool IsEscape;
 }
