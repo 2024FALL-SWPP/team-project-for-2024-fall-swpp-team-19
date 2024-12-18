@@ -17,7 +17,7 @@ public class StarHunterMinigame : MiniGameBase
     private bool canDuckMove = false;
     private bool canDuckJump = false;
 
-    [Server]
+    
     public override void StartGame()
     {
         base.StartGame();
@@ -28,7 +28,7 @@ public class StarHunterMinigame : MiniGameBase
         StartCoroutine(CountdownAndStart());
     }
 
-    [Server]
+    
     private IEnumerator CountdownAndStart()
     {
         for (int i = 3; i > 0; i--)
@@ -41,14 +41,13 @@ public class StarHunterMinigame : MiniGameBase
         canDuckJump = true;
     }
 
-    [Server]
+    
     public override void EndGame()
     {
         Debug.Log("[StarHunterMinigame] Ending game.");
         base.EndGame();
     }
 
-    [Server]
     public override void UpdateGameLogic()
     {
         base.UpdateGameLogic();
@@ -56,24 +55,34 @@ public class StarHunterMinigame : MiniGameBase
         // Log how many players we're processing input for this frame
         Debug.Log($"[StarHunterMinigame] UpdateGameLogic: Processing input for {currentPlayers.Count} players.");
 
-        foreach (var player in currentPlayers)
+        if (canDuckMove)
         {
-            if (canDuckMove)
-            {
-                var input = player.InputData;
-                
-                // Log the input data received from each player
-                Debug.Log($"[StarHunterMinigame] Player {player.netId} Input: " +
-                        $"Left={input.IsMovingLeft}, Right={input.IsMovingRight}, Interact={input.IsInteracting}");
-
-                HandleMovement(player, input);
-                HandleJumping(player, input);
-                HandleEscape(player, input);
-            }
+            float moveHorizontal = Input.GetAxis("Horizontal");
+            duckRb.velocity = new Vector2(duckSpeed * moveHorizontal, duckRb.velocity.y);
         }
+
+        if (Input.GetKeyDown(KeyCode.Space) && duckIsGrounded && canDuckJump)
+        {
+            duckRb.velocity = new Vector2(duckRb.velocity.x, duckJumpForce);
+            duckIsGrounded = false;
+        }
+
+        // foreach (var player in currentPlayers)
+        // {
+        //     if (canDuckMove)
+        //     {
+        //         var input = player.InputData;
+                
+        //         // Log the input data received from each player
+        //         Debug.Log($"[StarHunterMinigame] Player {player.netId} Input: " +
+        //                 $"Left={input.IsMovingLeft}, Right={input.IsMovingRight}, Interact={input.IsInteracting}");
+
+        //         HandleMovement(player, input);
+        //         HandleJumping(player, input);
+        //     }
+        // }
     }
 
-    [Server]
     private void HandleMovement(CustomGamePlayer player, PlayerInputData input)
     {
         Debug.Log($"[StarHunterMinigame] Handling movement for Player {player.netId}. " +
@@ -97,16 +106,7 @@ public class StarHunterMinigame : MiniGameBase
         }
     }
 
-    [Server]
-    private void HandleEscape(CustomGamePlayer player, PlayerInputData input)
-    {
-        if (input.IsEscape)
-        {
-            base.ResetGame();
-        }
-    }
-
-    [Server]
+    
     public void IncrementScore()
     {
         base.score++;

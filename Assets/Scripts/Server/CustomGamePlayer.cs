@@ -50,6 +50,12 @@ public class CustomGamePlayer : NetworkBehaviour
                   $"Left={input.IsMovingLeft}, Right={input.IsMovingRight}, Interact={input.IsInteracting}");
     }
 
+    [Server]
+    public void DestroyDevice()
+    {
+        NetworkServer.Destroy(interactingDevice);
+    }
+
     public int GetCompletedMinigames()
     {
         return completedMinigames;
@@ -60,6 +66,7 @@ public class CustomGamePlayer : NetworkBehaviour
         return minigamesForClue;
     }
 
+    [Command]
     public void IncrementCompletedMinigames()
     {
         completedMinigames++;
@@ -67,12 +74,16 @@ public class CustomGamePlayer : NetworkBehaviour
         CheckClueAvailable();
     }
 
+    [Server]
     private void CheckClueAvailable()
     {
         if (completedMinigames >= minigamesForClue)
         {
+            Debug.Log($"color is {color}");
             PlayerData playerData = PlayerDataManager.Instance.GetPlayerData(color);
-            ToggleManager.Instance.TargetToggleReveal(playerData.target);
+            Debug.Log($"playerData.target = {playerData.target}");
+            if (isLocalPlayer)
+                ToggleManager.Instance.TargetToggleReveal(playerData.target);
             completedMinigames = 0;
             if (minigamesForClue > 1)
             {
