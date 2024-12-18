@@ -29,6 +29,7 @@ public class ServerPlayerController : NetworkBehaviour
     [SerializeField] private GameObject playerCanvas; // Player's Canvas
 
 
+
     [SyncVar] private bool isPenalized = false;
     private bool canAttack = true;
 
@@ -243,6 +244,7 @@ public class ServerPlayerController : NetworkBehaviour
         {
             coolDownUI.StartCooldown(30f);
         }
+
 
     }
 
