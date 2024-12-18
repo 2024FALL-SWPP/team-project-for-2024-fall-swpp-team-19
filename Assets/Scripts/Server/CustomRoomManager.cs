@@ -45,6 +45,13 @@ public class CustomRoomManager : NetworkRoomManager
         SceneManager.LoadScene("LobbyScene");
     }
 
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        Debug.Log("Client started. Connecting to server...");
+        SceneManager.LoadScene("LobbyScene");
+    }
+
 
     public override bool OnRoomServerSceneLoadedForPlayer(NetworkConnectionToClient conn, GameObject roomPlayer, GameObject gamePlayer)
     {
@@ -299,35 +306,35 @@ public class CustomRoomManager : NetworkRoomManager
 
     private bool isGameStarted = false;
 
-void Update()
-{
-    base.Update();
-
-    // Debugging: Ensure the PlayerDataManager instance is available
-    if (PlayerDataManager.Instance != null)
+    void Update()
     {
-        // Print the current state of playerDataMap and roomSlots
-        int playerDataMapSize = PlayerDataManager.Instance.playerDataMap.Count;
-        int roomSlotsCount = CustomRoomManager.Instance.roomSlots.Count;
+        base.Update();
 
-        Debug.Log($"[Update] PlayerDataMap Size: {playerDataMapSize}, RoomSlots Count: {roomSlotsCount}, GameStarted: {isGameStarted}");
-
-        // Check if all players are ready, and start the game if not already started
-        if (playerDataMapSize != 0 && playerDataMapSize == roomSlotsCount && !isGameStarted)
+        // Debugging: Ensure the PlayerDataManager instance is available
+        if (PlayerDataManager.Instance != null)
         {
-            Debug.Log($"[Update] All players are ready. Assigning targets in a circle...");
-            PlayerDataManager.Instance.AssignTargetsInCircle();
-            isGameStarted = true;
-            Debug.Log($"[Update] Game has started. Targets assigned.");
-        }
-    }
-    else
-    {
-        Debug.LogWarning("[Update] PlayerDataManager.Instance is null. Cannot check player data.");
-    }
+            // Print the current state of playerDataMap and roomSlots
+            int playerDataMapSize = PlayerDataManager.Instance.playerDataMap.Count;
+            int roomSlotsCount = CustomRoomManager.Instance.roomSlots.Count;
 
-    // Debugging: Print the target circle information
-    PrintTargetCircle();
-}
+            Debug.Log($"[Update] PlayerDataMap Size: {playerDataMapSize}, RoomSlots Count: {roomSlotsCount}, GameStarted: {isGameStarted}");
+
+            // Check if all players are ready, and start the game if not already started
+            if (playerDataMapSize != 0 && playerDataMapSize == roomSlotsCount && !isGameStarted)
+            {
+                Debug.Log($"[Update] All players are ready. Assigning targets in a circle...");
+                PlayerDataManager.Instance.AssignTargetsInCircle();
+                isGameStarted = true;
+                Debug.Log($"[Update] Game has started. Targets assigned.");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[Update] PlayerDataManager.Instance is null. Cannot check player data.");
+        }
+
+        // Debugging: Print the target circle information
+        PrintTargetCircle();
+    }
 
 }
