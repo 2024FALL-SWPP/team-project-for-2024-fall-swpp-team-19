@@ -10,7 +10,7 @@ public class TestScript : NetworkBehaviour
     // Start is called before the first frame update
     void Start()
     {   
-        toggleManager.InitializeToggles();
+        // toggleManager.InitializeToggles();
         // Invoke("DelayedMethod", 2f);
     }
 

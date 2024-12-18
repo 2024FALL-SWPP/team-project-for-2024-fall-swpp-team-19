@@ -4,48 +4,36 @@ using System.Collections;
 
 public class CoolDownUI : MonoBehaviour
 {
-    public static CoolDownUI Instance; // 싱글톤 인스턴스
-
-    [SerializeField] private Image cooldownImage;
-    private bool isCooldownActive = false;
-
-    void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this; // 인스턴스 할당
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
+    [SerializeField] private Image cooldownImage; // UI Image for cooldown
+    private bool isCoolingDown = false;
 
     void Start()
     {
         cooldownImage.fillAmount = 0f;
+        // StartCooldown(30f);
     }
-
     public void StartCooldown(float duration)
     {
-        if (isCooldownActive) return; // 이미 쿨다운 중이면 무시
-        StartCoroutine(CooldownRoutine(duration));
+        if (!isCoolingDown)
+        {
+            StartCoroutine(CooldownCoroutine(duration));
+        }
     }
 
-    private IEnumerator CooldownRoutine(float duration)
+    private IEnumerator CooldownCoroutine(float duration)
     {
-        isCooldownActive = true;
+        isCoolingDown = true;
+        float elapsed = 0f;
 
-        float timePassed = 0f;
-        while (timePassed < duration)
+        cooldownImage.fillAmount = 1f;
+        while (elapsed < duration)
         {
-            timePassed += Time.deltaTime;
-            cooldownImage.fillAmount = 1f - (timePassed / duration);
+            elapsed += Time.deltaTime;
+            cooldownImage.fillAmount = 1f - (elapsed / duration); // Update UI
             yield return null;
         }
 
         cooldownImage.fillAmount = 0f;
-        isCooldownActive = false;
+        isCoolingDown = false;
     }
 }
