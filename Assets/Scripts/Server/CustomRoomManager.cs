@@ -42,6 +42,7 @@ public class CustomRoomManager : NetworkRoomManager
         base.OnStartHost();
         roomCode = GenerateRoomCode();
         Debug.Log($"Room Code (External IP): {roomCode}");
+        SceneManager.LoadScene("LobbyScene");
     }
 
 

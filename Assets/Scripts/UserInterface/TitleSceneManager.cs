@@ -84,7 +84,8 @@ public class TitleSceneManager : MonoBehaviour
     public void CreateLobbyButton()
     {
         NetworkManager.singleton.StartHost();
-        LoadLobbyScene();
+        
+//        LoadLobbyScene();
     }
 
     public void JoinButton()
@@ -106,7 +107,6 @@ public class TitleSceneManager : MonoBehaviour
             ConnectToServer();
         }
     }
-
     public void ConnectToServer()
     {
         if (!isConnecting)
@@ -124,7 +124,6 @@ public class TitleSceneManager : MonoBehaviour
                     isConnecting = true;
 
                     Debug.Log("Attempting to connect to localhost...");
-                    LoadLobbyScene();
                     return;
                 }
 
@@ -151,7 +150,6 @@ public class TitleSceneManager : MonoBehaviour
 
                             isConnecting = true;
                             CustomRoomManager.Instance.StartClient();
-                            LoadLobbyScene();
                             Debug.Log("Checking room existence...");
                         }
                         else
@@ -174,13 +172,9 @@ public class TitleSceneManager : MonoBehaviour
                 Debug.LogWarning("Please enter a valid room code.");
             }
         }
-        else if (isConnecting)
-        {
-            Debug.LogWarning("Already attempting to connect...");
-        }
         else
         {
-            Debug.LogError("NetworkManager is not found.");
+            Debug.LogWarning("Already attempting to connect...");
         }
     }
 
@@ -189,9 +183,9 @@ public class TitleSceneManager : MonoBehaviour
         Debug.Log("Client successfully connected to the server.");
         isConnecting = false;
 
-
+        // Load the Lobby Scene only after a successful connection
+        LoadLobbyScene();
     }
-
     private void OnClientDisconnected()
     {
         Debug.LogError("Failed to connect to the server or disconnected.");
