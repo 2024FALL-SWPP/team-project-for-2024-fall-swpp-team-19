@@ -3,7 +3,8 @@ using UnityEngine.UI;
 using System.Collections;
 
 public class CoolDownUI : MonoBehaviour
-{
+{   
+    // public static CoolDownUI Instance;
     [SerializeField] private Image cooldownImage; // UI Image for cooldown
     private bool isCoolingDown = false;
 
@@ -12,6 +13,8 @@ public class CoolDownUI : MonoBehaviour
         cooldownImage.fillAmount = 0f;
         // StartCooldown(30f);
     }
+
+   
     public void StartCooldown(float duration)
     {
         if (!isCoolingDown)

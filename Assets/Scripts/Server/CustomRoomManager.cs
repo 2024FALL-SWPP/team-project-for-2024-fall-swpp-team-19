@@ -56,36 +56,84 @@ public class CustomRoomManager : NetworkRoomManager
 
 
     public override GameObject OnRoomServerCreateGamePlayer(NetworkConnectionToClient conn, GameObject roomPlayer)
+{
+    isGameStarted = false;
+    Debug.Log("OnRoomServerCreateGamePlayer called.");
+
+    // Retrieve CustomRoomPlayer component from roomPlayer
+    if (roomPlayer == null)
     {
-        CustomRoomPlayer customRoomPlayer = roomPlayer.GetComponent<CustomRoomPlayer>();
-        ColorEnum playerColor = customRoomPlayer != null ? customRoomPlayer.GetColor() : ColorEnum.Undefined;
-
-        // Initialize PlayerData in PlayerDataManager
-        PlayerDataManager.Instance.InitializePlayerData(playerColor);
-
-        GameObject selectedPrefab = GetPrefabForColor(playerColor);
-        if (selectedPrefab == null)
-        {
-            Debug.LogWarning($"No prefab found for color: {playerColor}. Using default playerPrefab.");
-            selectedPrefab = playerPrefab;
-        }
-
-        if (availableSpawns == null || availableSpawns.Count == 0)
-        {
-            availableSpawns = new List<Vector3>(spawnPositions);
-        }
-
-        int randomIndex = Random.Range(0, availableSpawns.Count);
-        Vector3 spawnPosition = availableSpawns[randomIndex];
-        availableSpawns.RemoveAt(randomIndex);
-
-        GameObject gamePlayer = Instantiate(selectedPrefab, spawnPosition, Quaternion.identity);
-
-        NetworkServer.ReplacePlayerForConnection(conn, gamePlayer, ReplacePlayerOptions.KeepAuthority);
-
-        Debug.Log($"Created GamePlayer with color: {playerColor} at position: {spawnPosition}");
-        return gamePlayer;
+        Debug.LogError("RoomPlayer is null. Cannot create game player.");
+        return null;
     }
+
+    CustomRoomPlayer customRoomPlayer = roomPlayer.GetComponent<CustomRoomPlayer>();
+    if (customRoomPlayer == null)
+    {
+        Debug.LogError("CustomRoomPlayer component not found on RoomPlayer.");
+    }
+    else
+    {
+        Debug.Log($"CustomRoomPlayer found. RoomPlayer ID: {customRoomPlayer.netId}");
+    }
+
+    // Get player color from CustomRoomPlayer
+    ColorEnum playerColor = customRoomPlayer != null ? customRoomPlayer.GetColor() : ColorEnum.Undefined;
+    Debug.Log($"Player color determined: {playerColor}");
+
+    // Initialize PlayerData
+    if (PlayerDataManager.Instance != null)
+    {
+        Debug.Log("Initializing PlayerData in PlayerDataManager...");
+        PlayerDataManager.Instance.InitializePlayerData(playerColor);
+        Debug.Log("PlayerData initialized successfully.");
+    }
+    else
+    {
+        Debug.LogError("PlayerDataManager.Instance is null. PlayerData initialization skipped.");
+    }
+
+    // Select the appropriate prefab for the player's color
+    GameObject selectedPrefab = GetPrefabForColor(playerColor);
+    if (selectedPrefab == null)
+    {
+        Debug.LogWarning($"No prefab found for color: {playerColor}. Using default playerPrefab.");
+        selectedPrefab = playerPrefab;
+    }
+    else
+    {
+        Debug.Log($"Selected prefab for color {playerColor}: {selectedPrefab.name}");
+    }
+
+    // Handle spawn positions
+    if (availableSpawns == null || availableSpawns.Count == 0)
+    {
+        Debug.LogWarning("Available spawns are empty or null. Resetting to default spawn positions.");
+        availableSpawns = new List<Vector3>(spawnPositions);
+    }
+    Debug.Log($"Available spawn positions count: {availableSpawns.Count}");
+
+    // Choose a random spawn position
+    int randomIndex = Random.Range(0, availableSpawns.Count);
+    Vector3 spawnPosition = availableSpawns[randomIndex];
+    Debug.Log($"Random spawn position selected: {spawnPosition} (Index: {randomIndex})");
+    availableSpawns.RemoveAt(randomIndex);
+    Debug.Log($"Spawn position removed from available list. Remaining count: {availableSpawns.Count}");
+
+    // Instantiate the game player at the selected spawn position
+    Debug.Log("Instantiating game player...");
+    GameObject gamePlayer = Instantiate(selectedPrefab, spawnPosition, Quaternion.identity);
+    Debug.Log($"GamePlayer instantiated: {gamePlayer.name} at position {spawnPosition}");
+
+    // Replace the player for the connection
+    Debug.Log($"Replacing player for connection ID: {conn.connectionId} with new GamePlayer.");
+    NetworkServer.ReplacePlayerForConnection(conn, gamePlayer, ReplacePlayerOptions.KeepAuthority);
+    Debug.Log($"Player replaced successfully. GamePlayer ID: {gamePlayer.GetComponent<NetworkIdentity>().netId}");
+
+    // Final confirmation
+    Debug.Log($"GamePlayer creation completed. PlayerColor: {playerColor}, SpawnPosition: {spawnPosition}");
+    return gamePlayer;
+}
 
 
 
@@ -250,19 +298,35 @@ public class CustomRoomManager : NetworkRoomManager
 
     private bool isGameStarted = false;
 
-    void Update()
+void Update()
+{
+    base.Update();
+
+    // Debugging: Ensure the PlayerDataManager instance is available
+    if (PlayerDataManager.Instance != null)
     {
-        // Debugging: Keep printing the playerDataMap size
-        if (PlayerDataManager.Instance != null)
+        // Print the current state of playerDataMap and roomSlots
+        int playerDataMapSize = PlayerDataManager.Instance.playerDataMap.Count;
+        int roomSlotsCount = CustomRoomManager.Instance.roomSlots.Count;
+
+        Debug.Log($"[Update] PlayerDataMap Size: {playerDataMapSize}, RoomSlots Count: {roomSlotsCount}, GameStarted: {isGameStarted}");
+
+        // Check if all players are ready, and start the game if not already started
+        if (playerDataMapSize != 0 && playerDataMapSize == roomSlotsCount && !isGameStarted)
         {
-            if(PlayerDataManager.Instance.playerDataMap.Count > 1 && !isGameStarted)
-            {
-                PlayerDataManager.Instance.AssignTargetsInCircle();
-                isGameStarted = true;
-            }
-            int dataSize = PlayerDataManager.Instance.playerDataMap.Count;
-            Debug.Log($"PlayerDataMap Size: {dataSize}");
+            Debug.Log($"[Update] All players are ready. Assigning targets in a circle...");
+            PlayerDataManager.Instance.AssignTargetsInCircle();
+            isGameStarted = true;
+            Debug.Log($"[Update] Game has started. Targets assigned.");
         }
-        PrintTargetCircle();
     }
+    else
+    {
+        Debug.LogWarning("[Update] PlayerDataManager.Instance is null. Cannot check player data.");
+    }
+
+    // Debugging: Print the target circle information
+    PrintTargetCircle();
+}
+
 }

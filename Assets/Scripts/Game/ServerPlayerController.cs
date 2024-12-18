@@ -23,6 +23,13 @@ public class ServerPlayerController : NetworkBehaviour
     // Combat-related variables
     [SerializeField] private float attackRange = 200.0f;
     [SerializeField] public LayerMask playerLayer;
+
+    [SerializeField] private CoolDownUI coolDownUI;
+
+    [SerializeField] private GameObject playerCanvas; // Player's Canvas
+
+
+
     [SyncVar] private bool isPenalized = false;
     private bool canAttack = true;
 
@@ -30,6 +37,8 @@ public class ServerPlayerController : NetworkBehaviour
     [SyncVar] public bool isDead = false;
     [SerializeField] private Camera playerCamera;
     [SerializeField] private Camera spectatorCamera;
+
+
 
     private void Start()
     {
@@ -47,8 +56,14 @@ public class ServerPlayerController : NetworkBehaviour
 
         if (!isLocalPlayer)
         {
+            playerCanvas.SetActive(false);
             enabled = false;
         }
+        else
+        {
+            playerCanvas.SetActive(true);
+        }
+
     }
 
     private void Update()
@@ -223,6 +238,14 @@ public class ServerPlayerController : NetworkBehaviour
     void RpcApplyPenalty()
     {
         StartCoroutine(ApplyPenalty());
+
+
+        if(coolDownUI != null)
+        {
+            coolDownUI.StartCooldown(30f);
+        }
+
+
     }
 
     private IEnumerator ApplyPenalty()
