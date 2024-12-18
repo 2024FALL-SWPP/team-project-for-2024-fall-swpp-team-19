@@ -1,6 +1,7 @@
 using Mirror;
 using UnityEngine;
 using System.Collections;
+using System;
 
 public class ServerPlayerController : NetworkBehaviour
 {
@@ -108,8 +109,7 @@ public class ServerPlayerController : NetworkBehaviour
     {
         canAttack = false;
         CmdTriggerAttackAnimation();
-
-        StartCoroutine(AttackCooldown(3.0f));
+        StartCoroutine(AttackCooldown(2.0f));
     }
 
     private IEnumerator AttackCooldown(float delay)
@@ -165,42 +165,57 @@ public class ServerPlayerController : NetworkBehaviour
             return;
         }
 
+        // Get all players in attack range
         Collider[] hitPlayers = Physics.OverlapSphere(transform.position, attackRange, playerLayer);
         Debug.Log($"[ServerPlayerController] Player {netId} found {hitPlayers.Length} players in attack range.");
 
-        foreach (var hitPlayer in hitPlayers)
+        // Ensure there are at least 2 players in range (self + one other player)
+        if (hitPlayers.Length < 2)
         {
-            CustomGamePlayer targetPlayer = hitPlayer.GetComponent<CustomGamePlayer>();
-
-            if (targetPlayer == null)
-            {
-                Debug.LogError("[ServerPlayerController] Target player is missing CustomGamePlayer component.");
-                continue;
-            }
-
-            // Prevent attacking self
-            if (owner == targetPlayer)
-            {
-                Debug.LogWarning("[ServerPlayerController] Player cannot attack themselves.");
-                continue;
-            }
-
-            // Verify target player
-            PlayerData playerData = PlayerDataManager.Instance.GetPlayerData(owner.GetColor());
-
-            if (targetPlayer.GetColor() == playerData.target)
-            {
-                Debug.Log($"[ServerPlayerController] Player {netId} successfully killed target {targetPlayer.netId}.");
-                hitPlayer.GetComponent<ServerPlayerController>().Kill();
-                PlayerData targetPlayerData = PlayerDataManager.Instance.GetPlayerData(targetPlayer.GetColor());
-                playerData.UpdateField("target", targetPlayerData.target);
-            }
-            else
-            {
-                Debug.LogWarning($"[ServerPlayerController] Player {netId} attacked wrong target. Applying penalty.");
-                RpcApplyPenalty();
-            }
+            Debug.LogWarning("[ServerPlayerController] Not enough players in attack range to target a valid player.");
+            return;
         }
+
+        // Sort players by distance
+        Array.Sort(hitPlayers, (a, b) =>
+        {
+            float distA = Vector3.Distance(transform.position, a.transform.position);
+            float distB = Vector3.Distance(transform.position, b.transform.position);
+            return distA.CompareTo(distB);
+        });
+
+        // The second nearest player (index 1) is the target
+        Collider secondNearestPlayer = hitPlayers[1];
+        CustomGamePlayer targetPlayer = secondNearestPlayer.GetComponent<CustomGamePlayer>();
+
+        if (targetPlayer == null)
+        {
+            Debug.LogError("[ServerPlayerController] Target player is missing CustomGamePlayer component.");
+            return;
+        }
+
+        // Verify target player is not self
+        if (targetPlayer == owner)
+        {
+            Debug.LogWarning("[ServerPlayerController] The second nearest player is self. Aborting attack.");
+            return;
+        }
+
+        // Check if the target matches the attacker's assigned target
+        PlayerData playerData = PlayerDataManager.Instance.GetPlayerData(owner.GetColor());
+        if (targetPlayer.GetColor() == playerData.target)
+        {
+            Debug.Log($"[ServerPlayerController] Player {netId} successfully killed target {targetPlayer.netId}.");
+            secondNearestPlayer.GetComponent<ServerPlayerController>().Kill();
+            PlayerData targetPlayerData = PlayerDataManager.Instance.GetPlayerData(targetPlayer.GetColor());
+            playerData.UpdateField("target", targetPlayerData.target);
+        }
+        else
+        {
+            Debug.LogWarning($"[ServerPlayerController] Player {netId} attacked wrong target. Applying penalty.");
+            RpcApplyPenalty();
+        }
+
         GetComponent<MusicController>().PlayAttackSound();
     }
 
