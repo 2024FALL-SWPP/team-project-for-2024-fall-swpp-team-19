@@ -50,7 +50,8 @@ public class ServerPlayerController : NetworkBehaviour
         animator = GetComponent<Animator>();
         customPlayer = GetComponent<CustomGamePlayer>();
 
-        if(NetworkClient.localPlayer.GetComponent<CustomGamePlayer>()!=customPlayer){
+        if (NetworkClient.localPlayer.GetComponent<CustomGamePlayer>() != customPlayer)
+        {
             enabled = false;
         }
 
@@ -77,7 +78,7 @@ public class ServerPlayerController : NetworkBehaviour
             return;
         }
 
-        CheckGrounded();    
+        CheckGrounded();
         HandleMovement();
         HandleJump();
 
@@ -151,6 +152,7 @@ public class ServerPlayerController : NetworkBehaviour
             if (device != null)
             {
                 Debug.Log($"[ServerPlayerController] Player {netId} found a RegisterableDevice: {device.gameObject.name}. Sending interaction request.");
+                Debug.Log($"netId is {netId}, localPlayer netId is {NetworkClient.localPlayer.netId}, customPlayer is {customPlayer.netId}");
                 CmdTryInteractWithDevice(device.gameObject);
                 StartCoroutine(ResetInteractionAfterDelay(2.0f));
                 return;
@@ -240,7 +242,7 @@ public class ServerPlayerController : NetworkBehaviour
         StartCoroutine(ApplyPenalty());
 
 
-        if(coolDownUI != null)
+        if (coolDownUI != null)
         {
             coolDownUI.StartCooldown(30f);
         }
@@ -259,7 +261,7 @@ public class ServerPlayerController : NetworkBehaviour
     {
         if (isDead) return;
         isDead = true;
-        
+
         GameObject callerPlayer = connectionToClient.identity.gameObject;
         CustomGamePlayer owner = callerPlayer.GetComponent<CustomGamePlayer>();
         PlayerData playerData = PlayerDataManager.Instance.GetPlayerData(owner.GetColor());
@@ -316,15 +318,7 @@ public class ServerPlayerController : NetworkBehaviour
         RegisterableDevice device = deviceObject.GetComponent<RegisterableDevice>();
         if (device != null)
         {
-            bool success = device.RegisterPlayer(customPlayer);
-            if (success)
-            {
-                Debug.Log($"[ServerPlayerController] Player {netId} successfully connected to the mini-game.");
-            }
-            else
-            {
-                Debug.Log($"[ServerPlayerController] Player {netId} failed to connect to the mini-game. Check logs in MiniGameBase for details.");
-            }
+            device.RegisterPlayer(customPlayer);
         }
         else
         {

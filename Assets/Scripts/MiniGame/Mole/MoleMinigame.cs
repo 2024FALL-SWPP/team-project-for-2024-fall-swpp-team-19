@@ -13,7 +13,7 @@ public class MoleMinigame : MiniGameBase
     private GameObject activeButton;
     private GameObject activeMole;
 
-    [Server]
+    
     public override void StartGame()
     {
         base.StartGame();
@@ -25,7 +25,7 @@ public class MoleMinigame : MiniGameBase
         StartCoroutine(CountdownAndStart());
     }
 
-    [Server]
+    
     private IEnumerator CountdownAndStart()
     {
         scoreText.text = "";
@@ -57,7 +57,7 @@ public class MoleMinigame : MiniGameBase
         }
     }
 
-    [Server]
+    
     private void OnButtonClicked()
     {
         if (activeButton != null)
@@ -71,7 +71,7 @@ public class MoleMinigame : MiniGameBase
         }
     }
 
-    [Server]
+    
     public override void ClearGame()
     {
         Cursor.visible = false;

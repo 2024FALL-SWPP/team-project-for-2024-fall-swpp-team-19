@@ -24,7 +24,6 @@ public class GalagaMinigame : MiniGameBase
     private bool canShootBullet = false;
     private float shootBulletDelay = 1f;
 
-    [Server]
     public override void StartGame()
     {
         base.StartGame();
@@ -34,7 +33,6 @@ public class GalagaMinigame : MiniGameBase
         StartCoroutine(CountdownAndStart());
     }
 
-    [Server]
     private IEnumerator CountdownAndStart()
     {
         for (int i = 3; i > 0; i--)
@@ -49,7 +47,6 @@ public class GalagaMinigame : MiniGameBase
         StartEnemySpawns();
     }
 
-    [Server]
     public override void EndGame()
     {
         Debug.Log("[GalagaMinigame] Ending game.");
@@ -58,30 +55,62 @@ public class GalagaMinigame : MiniGameBase
         ClearEnemies();
     }
 
-    [Server]
+
     public override void UpdateGameLogic()
     {
         base.UpdateGameLogic();
         
-        // Log how many players we're processing input for this frame
-        Debug.Log($"[GalagaMinigame] UpdateGameLogic: Processing input for {currentPlayers.Count} players.");
-
-        foreach (var player in currentPlayers)
+        if (canMovePlane)
         {
-            var input = player.InputData;
-            
-            // Log the input data received from each player
-            Debug.Log($"[GalagaMinigame] Player {player.netId} Input: " +
-                      $"Left={input.IsMovingLeft}, Right={input.IsMovingRight}, Interact={input.IsInteracting}");
+            // Log how many players we're processing input for this frame
+            Debug.Log($"[GalagaMinigame] UpdateGameLogic: Processing input for {currentPlayers.Count} players.");
+            float moveHorizontal = Input.GetAxis("Horizontal");
 
-            HandleMovement(player, input);
-            HandleShooting(player, input);
+            Vector3 position = plane.rectTransform.localPosition;
+            position += Vector3.right * moveHorizontal * planeSpeed * Time.deltaTime;
+
+            position.x = Mathf.Clamp(position.x, minX, maxX);
+            plane.rectTransform.localPosition = position;
         }
+        
+
+        if (Input.GetKeyDown(KeyCode.Space) && canShootBullet)
+        {
+            Shoot();
+        }
+        // foreach (var player in currentPlayers)
+        // {
+        //     var input = player.InputData;
+            
+        //     // Log the input data received from each player
+        //     Debug.Log($"[GalagaMinigame] Player {player.netId} Input: " +
+        //               $"Left={input.IsMovingLeft}, Right={input.IsMovingRight}, Interact={input.IsInteracting}");
+
+        //     HandleMovement(player, input);
+        //     HandleShooting(player, input);
+        // }
 
         UpdateEnemies();
     }
 
-    [Server]
+    private void Shoot()
+    {
+        canShootBullet = false;
+
+        Texture2D texture = bulletTexture;
+        Vector3 position = plane.rectTransform.localPosition;
+        position.y += 15f;
+        Vector2 size = new Vector2(15, 15);
+        Vector2 bcOffset = new Vector2(0, 0);
+        Vector2 bcSize = new Vector2(1, 1);
+        bool bcIsTrigger = false;
+        bool addRB = true;
+
+        RawImage bullet = CreateRawImage(texture, position, size, bcOffset, bcSize, bcIsTrigger, addRB);
+        bullet.AddComponent<GalagaBullet>();
+        StartCoroutine(DelayAction());
+    }
+
     public override void ResetGame()
     {
         Debug.Log("[GalagaMinigame] Resetting game.");
@@ -90,14 +119,12 @@ public class GalagaMinigame : MiniGameBase
         enemies.Clear();
     }
 
-    [Server]
     private void StartEnemySpawns()
     {
         Debug.Log("[GalagaMinigame] Starting enemy spawns.");
         InvokeRepeating(nameof(SpawnEnemy), 0f, 2f);
     }
 
-    [Server]
     private void SpawnEnemy()
     {
         Vector2 position = new Vector2(Random.Range(-60, 60), 120);
@@ -112,7 +139,6 @@ public class GalagaMinigame : MiniGameBase
         if (enemy != null) enemies.Add(enemy);
     }
 
-    [Server]
     private void UpdateEnemies()
     {
         for (int i = enemies.Count - 1; i >= 0; i--)
@@ -133,7 +159,6 @@ public class GalagaMinigame : MiniGameBase
         }
     }
 
-    [Server]
     private void HandleMovement(CustomGamePlayer player, PlayerInputData input)
     {
         if (canMovePlane)
@@ -152,7 +177,6 @@ public class GalagaMinigame : MiniGameBase
         }
     }
 
-    [Server]
     private void HandleShooting(CustomGamePlayer player, PlayerInputData input)
     {
         if (input.IsJumping && canShootBullet)
@@ -180,7 +204,6 @@ public class GalagaMinigame : MiniGameBase
         }
     }
 
-    [Server]
     IEnumerator DelayAction()
     {
         // Wait for 1 second
@@ -191,7 +214,6 @@ public class GalagaMinigame : MiniGameBase
         canShootBullet = true;
     }
 
-    [Server]
     private RawImage CreateRawImage(Texture2D texture, Vector2 position, Vector2 size,
                                     Vector2 bcOffset, Vector2 bcSize, bool bcIsTrigger, bool addRB)
     {
@@ -230,7 +252,6 @@ public class GalagaMinigame : MiniGameBase
         return rawImage;
     }
 
-    [Server]
     private void ClearEnemies()
     {
         foreach (var enemy in enemies)
@@ -240,7 +261,6 @@ public class GalagaMinigame : MiniGameBase
         enemies.Clear();
     }
 
-    [Server]
     public void IncrementScore()
     {
         base.score++;

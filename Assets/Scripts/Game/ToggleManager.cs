@@ -149,6 +149,7 @@ public class ToggleManager : NetworkBehaviour
         return null;
     }
 
+    [Client]
     public void TargetToggleReveal(ColorEnum targetColorEnum)
     {
         SetToggleLabelText(ColorEnumToToggle(targetColorEnum), "Target");

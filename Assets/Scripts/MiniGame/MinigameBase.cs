@@ -2,30 +2,29 @@ using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 
-public abstract class MiniGameBase : NetworkBehaviour
+public abstract class MiniGameBase : MonoBehaviour
 {
-    [SyncVar] public bool gameStarted = false;
+    public bool gameStarted = false;
 
     // Server-side list of players currently in the mini-game
     public List<CustomGamePlayer> currentPlayers = new List<CustomGamePlayer>();
 
     // SyncList to track player netIds for all clients
-    public SyncList<uint> playerIdsInGame = new SyncList<uint>();
+    public List<uint> playerIdsInGame = new List<uint>();
 
     public int score;
     public int targetScore;
 
     private Canvas miniGameCanvas;
 
-    [SerializeField] private int requiredPlayersToStart = 1;
-    public override void OnStartClient()
+    private int requiredPlayersToStart = 1;
+    void Start()
     {
-        base.OnStartClient();
         InitializeCanvas();
         ShowCanvasIfLocalPlayerIsInGame();
 
         // Subscribe using the correct delegate signature
-        playerIdsInGame.OnChange += OnPlayerIdsChanged;
+        // playerIdsInGame.OnChange += OnPlayerIdsChanged;
     }
 
     private void OnPlayerIdsChanged(SyncList<uint>.Operation op, int index, uint item)
@@ -66,13 +65,12 @@ public abstract class MiniGameBase : NetworkBehaviour
         }
     }
 
-    [Server]
-    public virtual bool RegisterPlayer(CustomGamePlayer player)
+    public virtual void RegisterPlayer(CustomGamePlayer player)
     {
         if (currentPlayers.Contains(player))
         {
             Debug.Log($"[MiniGameBase] Player {player.netId} is already registered.");
-            return false;
+            return;
         }
 
         currentPlayers.Add(player);
@@ -85,11 +83,8 @@ public abstract class MiniGameBase : NetworkBehaviour
         {
             StartGame();
         }
-
-        return true;
     }
 
-    [Server]
     public virtual void UnregisterPlayer(CustomGamePlayer player)
     {
         if (!currentPlayers.Contains(player)) return;
@@ -107,7 +102,6 @@ public abstract class MiniGameBase : NetworkBehaviour
         }
     }
 
-    [Server]
     public virtual void StartGame()
     {
         gameStarted = true;
@@ -115,7 +109,6 @@ public abstract class MiniGameBase : NetworkBehaviour
         RpcUpdateGameState();
     }
 
-    [Server]
     public virtual void EndGame()
     {
         gameStarted = false;
@@ -128,13 +121,12 @@ public abstract class MiniGameBase : NetworkBehaviour
         RpcUpdateGameState();
     }
 
-    [Server]
     public virtual void ResetGame()
     {
         foreach (var player in currentPlayers)
         {
             UnregisterPlayer(player);
-            NetworkServer.Destroy(player.interactingDevice);
+            // NetworkServer.Destroy(player.interactingDevice);
             player.interactingDevice = null;
         }
         gameStarted = false;
@@ -142,26 +134,23 @@ public abstract class MiniGameBase : NetworkBehaviour
         playerIdsInGame.Clear();
     }
 
-    [Server]
     public virtual void ClearGame()
     {
         foreach (var player in currentPlayers)
         {
             player.IncrementCompletedMinigames();
             UnregisterPlayer(player);
-            NetworkServer.Destroy(player.interactingDevice);
+            player.DestroyDevice();
             player.interactingDevice = null;
         }
     }
 
-    [ServerCallback]
     private void Update()
     {
         // Ensure game logic updates on the server each frame
         UpdateGameLogic();
     }
 
-    [Server]
     public virtual void UpdateGameLogic()
     {
         // Implement logic in subclasses if needed
@@ -171,13 +160,11 @@ public abstract class MiniGameBase : NetworkBehaviour
         }
     }
 
-    [Server]
     protected virtual void HandlePlayerInput(CustomGamePlayer player)
     {
         // Override in subclasses to handle input
     }
 
-    [ClientRpc]
     private void RpcUpdateGameState()
     {
         // Re-check if the local player is in the game to update UI

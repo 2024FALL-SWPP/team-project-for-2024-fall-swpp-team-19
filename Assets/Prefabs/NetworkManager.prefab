@@ -88,7 +88,7 @@ MonoBehaviour:
   disconnectInactiveConnections: 0
   disconnectInactiveTimeout: 60
   authenticator: {fileID: 0}
-  playerPrefab: {fileID: 5128931314094185469, guid: 9363a8fb8e9dc1944ad11186b8089d43, type: 3}
+  playerPrefab: {fileID: 2617871953943514019, guid: 6cb75c0c44bccf14c90d4796729fac9a, type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 0
   spawnPrefabs:
@@ -96,6 +96,17 @@ MonoBehaviour:
   - {fileID: 5688730546774849242, guid: 497dee62c2cd84fe59e9568ccd78d6c0, type: 3}
   - {fileID: 3416774530011126836, guid: bb80fe052136642eba4596386fbd782f, type: 3}
   - {fileID: 1993333480318940484, guid: 3caee9542f1717c42950d89a6a1233f7, type: 3}
+  - {fileID: 5500288185849350062, guid: 5bc49c6fd6ccddb4a87d5a409adce1b0, type: 3}
+  - {fileID: 675561207987480450, guid: 94ea3cadfaea9014da6803e407f02a67, type: 3}
+  - {fileID: 2370362751978321258, guid: 53111488b1528304a98554171ebbb245, type: 3}
+  - {fileID: 4903931424500047495, guid: 67b79c5d77c27a4458e2f79c0b6fa0e2, type: 3}
+  - {fileID: 8089621220946675956, guid: 5a25e5f614c0f97499ba4de71e6b3ea2, type: 3}
+  - {fileID: 3946549948338206345, guid: 20dc1b9b053aa6b42b3447a26e4567b4, type: 3}
+  - {fileID: 2249191838931795419, guid: aa39c875db9fa0a4ba38341608959ff4, type: 3}
+  - {fileID: 1294655115312165151, guid: 2a0b837ae1f4b4d82b9dad4b73b8807c, type: 3}
+  - {fileID: 5518834796061346977, guid: d3d98b10dad094e8391b1469fb42d0aa, type: 3}
+  - {fileID: 4078202938951103210, guid: 2ba7876eeae4147d0a14c545ea5e733e, type: 3}
+  - {fileID: 429938383895724979, guid: 88b0a9be8583ca44987290efc2c50249, type: 3}
   exceptionsDisconnect: 0
   snapshotSettings:
     bufferTimeMultiplier: 2
@@ -119,9 +130,14 @@ MonoBehaviour:
   _allPlayersReady: 0
   clientIndex: 0
   spawnPositions:
-  - {x: 100, y: 100, z: 100}
-  - {x: 100, y: 100, z: 100}
-  - {x: 100, y: 100, z: 100}
+  - {x: 25, y: 50, z: 25}
+  - {x: 25, y: 50, z: 975}
+  - {x: 975, y: 50, z: 25}
+  - {x: 975, y: 50, z: 975}
+  - {x: 375, y: 50, z: 375}
+  - {x: 375, y: 50, z: 625}
+  - {x: 625, y: 50, z: 375}
+  - {x: 625, y: 50, z: 625}
   deviceSpawnPositions:
   - {x: 25, y: 20, z: 25}
   - {x: 250, y: 20, z: 75}

@@ -47,10 +47,13 @@ public class PlayerDataManager : NetworkBehaviour
         }
     }
 
+    [Server]
     public PlayerData GetPlayerData(ColorEnum color)
     {
+        Debug.Log($"Received color {color}");
         if (playerDataMap.ContainsKey(color))
         {
+            Debug.Log($"There's corresponding playerData {color}");
             return playerDataMap[color];
         }
         return null;

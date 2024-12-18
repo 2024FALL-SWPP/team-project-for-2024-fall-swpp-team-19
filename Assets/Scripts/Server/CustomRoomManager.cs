@@ -182,7 +182,7 @@ public class CustomRoomManager : NetworkRoomManager
                 Vector3 position = deviceSpawnPositions[i];
                 Vector3 rotation = deviceSpawnRotations[i];
 
-                int randomIndex = Random.Range(0, 4);
+                int randomIndex = 2;
                 spawnedDevices[i] = Instantiate(spawnPrefabs[randomIndex], position, Quaternion.Euler(rotation.x, rotation.y, rotation.z));
                 NetworkServer.Spawn(spawnedDevices[i]);
             }
@@ -199,7 +199,7 @@ public class CustomRoomManager : NetworkRoomManager
                 Vector3 position = deviceLateSpawnPositions[i];
                 Vector3 rotation = deviceLateSpawnRotations[i];
 
-                int randomIndex = Random.Range(0, 4);
+                int randomIndex = 2;
                 lateSpawnedDevices[i] = Instantiate(spawnPrefabs[randomIndex], position, Quaternion.Euler(rotation.x, rotation.y, rotation.z));
                 NetworkServer.Spawn(lateSpawnedDevices[i]);
             }
