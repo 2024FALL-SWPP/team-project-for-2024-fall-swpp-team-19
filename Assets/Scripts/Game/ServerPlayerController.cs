@@ -23,6 +23,9 @@ public class ServerPlayerController : NetworkBehaviour
     // Combat-related variables
     [SerializeField] private float attackRange = 200.0f;
     [SerializeField] public LayerMask playerLayer;
+    [SerializeField] private CoolDownUI coolDownUI;
+
+    [SerializeField] private GameObject playerCanvas; // Player's Canvas
 
     [SyncVar] private bool isPenalized = false;
     private bool canAttack = true;
@@ -31,6 +34,8 @@ public class ServerPlayerController : NetworkBehaviour
     [SyncVar] public bool isDead = false;
     [SerializeField] private Camera playerCamera;
     [SerializeField] private Camera spectatorCamera;
+
+
 
     private void Start()
     {
@@ -48,8 +53,14 @@ public class ServerPlayerController : NetworkBehaviour
 
         if (!isLocalPlayer)
         {
+            playerCanvas.SetActive(false);
             enabled = false;
         }
+        else
+        {
+            playerCanvas.SetActive(true);
+        }
+
     }
 
     private void Update()
@@ -226,13 +237,9 @@ public class ServerPlayerController : NetworkBehaviour
     {
         StartCoroutine(ApplyPenalty());
           // CooldownUI 싱글톤 호출
-        if (CoolDownUI.Instance != null)
+        if(coolDownUI != null)
         {
-            CoolDownUI.Instance.StartCooldown(30.0f); // 30초 쿨다운
-        }
-        else
-        {
-            Debug.LogError("CooldownUI Instance is not found!");
+            coolDownUI.StartCooldown(30f);
         }
     }
 

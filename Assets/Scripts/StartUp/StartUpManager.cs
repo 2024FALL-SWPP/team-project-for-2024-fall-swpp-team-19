@@ -12,9 +12,13 @@ public class StartUpManager : MonoBehaviour
     [Tooltip("The prefab for the NetworkManager.")]
     [SerializeField] private NetworkManager networkManagerPrefab;
 
+    [Tooltip("The prefab for the PlayerDataManager.")]
+    [SerializeField] private PlayerDataManager playerDataManagerPrefab;
+
     void Start()
     {
         InitializeNetworkManager();
+        InitializePlayerDataManager();
         LoadNextScene();
     }
 
@@ -36,6 +40,27 @@ public class StartUpManager : MonoBehaviour
         else
         {
             Debug.Log("NetworkManager already exists.");
+        }
+    }
+
+    private void InitializePlayerDataManager()
+    {
+        if (PlayerDataManager.Instance == null)
+        {
+            if (playerDataManagerPrefab != null)
+            {
+                // Instantiate PlayerDataManager from prefab
+                Instantiate(playerDataManagerPrefab);
+                Debug.Log("PlayerDataManager initialized from prefab.");
+            }
+            else
+            {
+                Debug.LogError("PlayerDataManagerPrefab is not assigned in the Inspector!");
+            }
+        }
+        else
+        {
+            Debug.Log("PlayerDataManager already exists.");
         }
     }
 

@@ -9,6 +9,21 @@ public class PlayerDataManager : NetworkBehaviour
     public class SyncPlayerDataDictionary : SyncDictionary<ColorEnum, PlayerData> { }
     public SyncPlayerDataDictionary playerDataMap = new SyncPlayerDataDictionary();
 
+
+     public override void OnStartServer()
+    {
+        base.OnStartServer();
+
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Debug.LogWarning("Multiple PlayerDataManager instances detected. Destroying the duplicate.");
+            Destroy(gameObject);
+        }
+    }
     void Awake()
     {
         if (Instance == null)
@@ -16,7 +31,7 @@ public class PlayerDataManager : NetworkBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
         }
-        else
+        else if (Instance != this)
         {
             Destroy(gameObject);
         }
