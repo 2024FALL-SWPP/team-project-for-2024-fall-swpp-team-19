@@ -23,7 +23,6 @@ public class ServerPlayerController : NetworkBehaviour
     // Combat-related variables
     [SerializeField] private float attackRange = 200.0f;
     [SerializeField] public LayerMask playerLayer;
-
     [SyncVar] private bool isPenalized = false;
     private bool canAttack = true;
 
@@ -207,7 +206,6 @@ public class ServerPlayerController : NetworkBehaviour
         if (targetPlayer.GetColor() == playerData.target)
         {
             Debug.Log($"[ServerPlayerController] Player {netId} successfully killed target {targetPlayer.netId}.");
-            ToggleManager.Instance.RpcSetToggleUninteractable(playerData.target);
             secondNearestPlayer.GetComponent<ServerPlayerController>().Kill();
             PlayerData targetPlayerData = PlayerDataManager.Instance.GetPlayerData(targetPlayer.GetColor());
             playerData.UpdateField("target", targetPlayerData.target);
@@ -225,20 +223,10 @@ public class ServerPlayerController : NetworkBehaviour
     void RpcApplyPenalty()
     {
         StartCoroutine(ApplyPenalty());
-          // CooldownUI 싱글톤 호출
-        if (CoolDownUI.Instance != null)
-        {
-            CoolDownUI.Instance.StartCooldown(30.0f); // 30초 쿨다운
-        }
-        else
-        {
-            Debug.LogError("CooldownUI Instance is not found!");
-        }
     }
 
     private IEnumerator ApplyPenalty()
     {
-        CmdTriggerRunningAnimation(false);
         isPenalized = true;
         yield return new WaitForSeconds(30f); // 30s penalty
         isPenalized = false;
@@ -254,11 +242,18 @@ public class ServerPlayerController : NetworkBehaviour
         PlayerData playerData = PlayerDataManager.Instance.GetPlayerData(owner.GetColor());
         playerData.UpdateField("isAlive", false);
 
+        // Trigger dying animation
         if (animator != null)
         {
-            CmdTriggerDyingAnimation();
+            Debug.Log($"[ServerPlayerController] Triggering dying animation for player {netId}.");
+            TriggerDyingAnimation();
+        }
+        else
+        {
+            Debug.LogError($"[ServerPlayerController] Animator is null for player {netId}. Cannot play dying animation.");
         }
 
+        // Handle death logic
         StartCoroutine(HandleDeath());
     }
 
@@ -330,8 +325,7 @@ public class ServerPlayerController : NetworkBehaviour
         }
     }
 
-    [Command]
-    void CmdTriggerDyingAnimation()
+    private void TriggerDyingAnimation()
     {
         RpcPlayDyingAnimation();
     }
@@ -343,7 +337,12 @@ public class ServerPlayerController : NetworkBehaviour
         {
             animator.SetTrigger("Die");
         }
+        else
+        {
+            Debug.LogError("Animator is null, unable to play dying animation.");
+        }
     }
+
 
     [Command]
     void CmdTriggerRunningAnimation(bool isMoving)
