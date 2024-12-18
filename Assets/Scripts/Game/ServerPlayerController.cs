@@ -207,6 +207,7 @@ public class ServerPlayerController : NetworkBehaviour
         if (targetPlayer.GetColor() == playerData.target)
         {
             Debug.Log($"[ServerPlayerController] Player {netId} successfully killed target {targetPlayer.netId}.");
+            ToggleManager.Instance.RpcSetToggleUninteractable(playerData.target);
             secondNearestPlayer.GetComponent<ServerPlayerController>().Kill();
             PlayerData targetPlayerData = PlayerDataManager.Instance.GetPlayerData(targetPlayer.GetColor());
             playerData.UpdateField("target", targetPlayerData.target);

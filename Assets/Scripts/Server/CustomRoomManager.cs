@@ -115,8 +115,8 @@ public class CustomRoomManager : NetworkRoomManager
         // If this is the gameplay scene, handle player spawning ourselves
         if (sceneName == GameplayScene)
         {
-            StartCoroutine(FirstSpawn());
-            StartCoroutine(LateSpawn());
+            InvokeRepeating(nameof(FirstSpawn), 0f, 60f);
+            InvokeRepeating(nameof(LateSpawn), 30f, 60f);
 
             // Call AssignTargetsInCircle to set player targets
             PlayerDataManager.Instance.AssignTargetsInCircle();
@@ -124,7 +124,7 @@ public class CustomRoomManager : NetworkRoomManager
         }
     }
 
-    private IEnumerator FirstSpawn()
+    private void FirstSpawn()
     {
         // Prepare out spawn points of devices
         for (int i = 0; i < deviceSpawnPositions.Length; i++)
@@ -139,13 +139,10 @@ public class CustomRoomManager : NetworkRoomManager
                 NetworkServer.Spawn(spawnedDevices[i]);
             }
         }
-        yield return new WaitForSeconds(60f);
     }
 
-    private IEnumerator LateSpawn()
+    private void LateSpawn()
     {
-        yield return new WaitForSeconds(10f);
-
         // Prepare out spawn points of devices
         for (int i = 0; i < deviceLateSpawnPositions.Length; i++)
         {

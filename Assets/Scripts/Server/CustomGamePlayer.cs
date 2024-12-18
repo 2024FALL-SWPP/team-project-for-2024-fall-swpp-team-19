@@ -71,6 +71,8 @@ public class CustomGamePlayer : NetworkBehaviour
     {
         if (completedMinigames >= minigamesForClue)
         {
+            PlayerData playerData = PlayerDataManager.Instance.GetPlayerData(color);
+            ToggleManager.Instance.TargetToggleReveal(playerData.target);
             completedMinigames = 0;
             if (minigamesForClue > 1)
             {

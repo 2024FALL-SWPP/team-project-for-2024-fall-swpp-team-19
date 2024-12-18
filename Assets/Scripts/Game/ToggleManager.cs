@@ -3,13 +3,29 @@ using UnityEngine;
 using UnityEngine.UI;
 using Mirror;
 using System.Reflection.Emit;
+using Unity.VisualScripting;
 
-public class ToggleManager : MonoBehaviour
+public class ToggleManager : NetworkBehaviour
 {
+    public static ToggleManager Instance { get; private set; }
     public GameObject togglePrefab; // 미리 만들어둔 Toggle Prefab
     public Transform toggleContainer; // Vertical Layout Group이 있는 컨테이너
 
     private List<Toggle> toggles = new List<Toggle>();
+
+    void Awake()
+    {
+        InitializeToggles();
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     public void InitializeToggles()
     {
@@ -110,6 +126,32 @@ public class ToggleManager : MonoBehaviour
             Debug.Log("Background Image Found, Color changed to " + color);
             backgroundImage.color = color;
         }
+
+        ToggleInfo info = toggle.AddComponent<ToggleInfo>();
+        info.colorEnum = colorEnum;
+    }
+
+    //Toggle의 colorEnum을 받아오는 함수
+    private ColorEnum GetToggleColor(Toggle toggle)
+    {
+        return toggle.GetComponent<ToggleInfo>().colorEnum;
+    }
+
+    private Toggle ColorEnumToToggle(ColorEnum colorEnum)
+    {
+        foreach (Toggle toggle in toggles)
+        {
+            if (GetToggleColor(toggle) == colorEnum)
+            {
+                return toggle;
+            }
+        }
+        return null;
+    }
+
+    public void TargetToggleReveal(ColorEnum targetColorEnum)
+    {
+        SetToggleLabelText(ColorEnumToToggle(targetColorEnum), "Target");
     }
 
     private void ForceLayoutRebuild()
@@ -170,8 +212,22 @@ public class ToggleManager : MonoBehaviour
 
     // Toggle을 비활성화하는 함수
     // 플레이어가 사망했을 때 사용하면 됩니다.
-    public void SetToggleUninteractable(Toggle toggle)
+    [Command]
+    public void CmdSetToggleUninteractable(ColorEnum colorEnum)
     {
+        Debug.Log($"[ToggleManager] ColorEnum is {colorEnum}");
+        Toggle toggle = ColorEnumToToggle(colorEnum);
+        Debug.Log($"[ToggleManager] Toggle is {toggle}");
+        SetToggleLabelText(toggle, "Dead");
+        toggle.interactable = false;
+        RpcSetToggleUninteractable(colorEnum);
+    }
+
+    [ClientRpc]
+    public void RpcSetToggleUninteractable(ColorEnum colorEnum)
+    {
+        Toggle toggle = ColorEnumToToggle(colorEnum);
+        SetToggleLabelText(toggle, "Dead");
         toggle.interactable = false;
     }
 }
